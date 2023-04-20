@@ -2,41 +2,21 @@
 <html lang="en"><head>
   <title>Steren Giannini</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Personal works">
-  <meta name="author" content="Steren Giannini">
-  <meta name="theme-color" content="#00796B">
-  <meta name="color-scheme" content="light dark">
-  <link rel="icon" type="image/svg+xml" href="icon.svg">
-  
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:creator" content="@steren">
-  <meta name="twitter:title" content="Steren Giannini">
-  <meta name="twitter:description" content="Works">
-  <meta name="twitter:image" content="http://steren.fr/icon.png">
 
-  <meta property="og:type" content="profile">
-  <meta property="og:title" content="Steren Giannini">
-  <meta property="og:description" content="Works">
-  <meta property="og:url" content="http://steren.fr">
-  <meta property="og:image" content="http://steren.fr/icon.png">
-  <meta property="og:profile:first_name" content="Steren">
-  <meta property="og:profile:last_name" content="Giannini">
-
-  <script type="application/ld+json">
+  <script type="importmap">
   {
-    "@context": "http://schema.org",
-    "@type": "Person",
-    "url": "http://steren.fr",
-    "name": "Steren Giannini",
-    "givenName": "Steren",
-    "familyName": "Giannini",
-    "image": "http://steren.fr/icon.png"
+    "imports": {
+      "rtx-on": "../rtx-on.js",
+      "three": "../node_modules/three/build/three.module.js"
+    }
   }
   </script>
 
-  <script type="module" src="index.js"></script>
+  <script type="module">
+    import {rtxOn} from 'rtx-on';
+    rtxOn(".card");
+  </script>
 
-  
 
   <style>
     :root {

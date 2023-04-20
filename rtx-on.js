@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+
 /**
  * 
  * @param {String} selector: CSS selector for elevated elements, defaults to children of the passed element.
