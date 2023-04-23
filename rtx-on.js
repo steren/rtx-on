@@ -1,3 +1,6 @@
+import {makePathTracer} from 'webgl-path-tracing';
+import {makeSphereColumn, makeSpherePyramid, makeSphereAndCube, makeCubeAndSpheres, makeTableAndChair, makeStacks} from 'scenes';
+
 /**
  * 
  * @param {String} selector: CSS selector for elevated elements, defaults to children of the passed element.
@@ -21,6 +24,8 @@ function rtxOn(selector, element) {
 		if(rect.height === 0 || rect.width === 0) continue;
 		console.log(x, y);
 	}
+
+	const ui = makePathTracer(document.getElementById('canvas'), makeSphereColumn());
 
   // const canvas = document.createElement('canvas');
   // element.style.background = `url(${canvas.toDataURL()})`;

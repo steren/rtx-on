@@ -6,18 +6,21 @@
   <script type="importmap">
   {
     "imports": {
+      "sylvester": "../webgl-path-tracing/sylvester.src.js",
+      "glUtils": "../webgl-path-tracing/glUtils.js",
+      "scenes": "../webgl-path-tracing/scenes.js",
+      "webgl-path-tracing": "../webgl-path-tracing/webgl-path-tracing.js",
       "rtx-on": "../rtx-on.js"
     }
   }
   </script>
 
-  <script src="../webgl-path-tracing/sylvester.src.js"></script>
-  <script src="../webgl-path-tracing/glUtils.js"></script>
-  <script src="../webgl-path-tracing/webgl-path-tracing.js"></script>
-
   <script type="module">
     import {rtxOn} from 'rtx-on';
-    rtxOn(".card");
+
+    window.onload = function() {
+      rtxOn(".card");
+    }
   </script>
 
 
@@ -231,20 +234,6 @@
     </div>
   </header>
 
-  <select id="material">
-    <option value="0" selected>Diffuse</option>
-    <option value="1">Mirror</option>
-    <option value="2">Glossy</option>
-  </select>
-  <select id="environment">
-    <option value="0" selected>Cornell Box - Yellow and Blue</option>
-    <option value="1">Cornell Box - Red and Green</option>
-  </select>
-  <span id="glossiness-factor">
-    <br>with glossiness factor: 0 &lt; <input id="glossiness" value="0.6"> &lt; 1
-  </span>
-
-  <div id="error"><noscript>Please enable JavaScript.</noscript></div>
   <canvas id="canvas" width="512" height="512"></canvas>
 
   <div class="container">
