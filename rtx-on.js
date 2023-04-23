@@ -1,5 +1,6 @@
 import {makePathTracer} from 'webgl-path-tracing';
-import {makeSphereColumn, makeSpherePyramid, makeSphereAndCube, makeCubeAndSpheres, makeTableAndChair, makeStacks} from 'scenes';
+// TODO: do not use a preset scene
+import {makeSphereColumn} from 'scenes';
 
 /**
  * 
@@ -25,19 +26,19 @@ function rtxOn(selector, element) {
 		console.log(x, y);
 	}
 
-	const ui = makePathTracer(document.getElementById('canvas'), makeSphereColumn());
+	const canvas = document.createElement('canvas');
+	canvas.width = element.clientWidth;
+	canvas.height = element.clientHeight;
+	canvas.style.position = 'absolute';
+	canvas.style.top = '0';
+	canvas.style.left = '0';
+	canvas.style.zIndex = '-1';
+	element.appendChild(canvas);
 
-  // const canvas = document.createElement('canvas');
-  // element.style.background = `url(${canvas.toDataURL()})`;
-  // element.style.backgroundSize = 'cover';
-    
-  // function animate() {
-  //   requestAnimationFrame(animate);
-  //   // Update the background with the rendered canvas
-  //   element.style.backgroundImage = `url(${canvas.toDataURL()})`;
-  // }
 
-  // animate();
+
+	const ui = makePathTracer(canvas, makeSphereColumn());
+
 }
 
 export {rtxOn};
