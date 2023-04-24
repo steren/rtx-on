@@ -1,6 +1,35 @@
-import {makePathTracer} from 'webgl-path-tracing';
-// TODO: do not use a preset scene
-import {makeSphereColumn} from 'scenes';
+import {makePathTracer, Cube} from 'webgl-path-tracing';
+import { Vector } from 'sylvester';
+
+const zHeight = 0.1;
+
+function makeScene(element, elements) {
+  var objects = [];
+  let nextObjectId = 0;
+
+	for (let el = 0; el < elements.length; el++) {
+		let rect = elements[el].getBoundingClientRect();
+		// ignore elements that have no height or width
+		if(rect.height === 0 || rect.width === 0) continue;
+
+		// FIXME: handle scroll position
+		let minCorner = Vector.create([
+			2 * rect.left / (element.clientWidth) - 1,
+			-1 * 2 * rect.top / (element.clientHeight) + 1,
+			-1,
+		]);
+
+		let maxCorner = Vector.create([
+			2 * (rect.left + rect.width) / (element.clientWidth) - 1,
+			-1 * 2 * (rect.top + rect.height) / (element.clientHeight) + 1,
+			zHeight -1,
+		]);
+
+		objects.push(new Cube(minCorner, maxCorner, nextObjectId++));
+	}
+
+  return objects;
+}
 
 /**
  * 
@@ -17,15 +46,6 @@ function rtxOn(selector, element) {
 		elements = element.children;
 	}
 
-	for (let el = 0; el < elements.length; el++) {
-		let rect = elements[el].getBoundingClientRect();
-		let x = rect.left + (rect.width / 2);
-		let y = rect.top + (rect.height / 2);
-		// ignore elements that have no height or width
-		if(rect.height === 0 || rect.width === 0) continue;
-		console.log(x, y);
-	}
-
 	const canvas = document.createElement('canvas');
 	canvas.width = element.clientWidth;
 	canvas.height = element.clientHeight;
@@ -35,9 +55,7 @@ function rtxOn(selector, element) {
 	canvas.style.zIndex = '-1';
 	element.appendChild(canvas);
 
-
-
-	const ui = makePathTracer(canvas, makeSphereColumn());
+	const ui = makePathTracer(canvas, makeScene(element, elements));
 
 }
 
