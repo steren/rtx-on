@@ -55,7 +55,7 @@ function rtxOn(selector, element) {
 	canvas.style.zIndex = '-1';
 	element.appendChild(canvas);
 
-	const ui = makePathTracer(canvas, makeScene(element, elements));
+	const ui = makePathTracer(canvas, makeScene(element, elements), {}, false);
 
 }
 
