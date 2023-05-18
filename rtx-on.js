@@ -3,6 +3,21 @@ import { Vector } from 'sylvester';
 
 const zHeight = 0.1;
 
+function closestPowerOfTwo(num) {
+  // If num is already a power of two, return num
+  if ((num & (num - 1)) === 0) {
+    return num;
+  }
+
+  // Find the nearest power of two greater than num
+  let power = 1;
+  while (power < num) {
+    power *= 2;
+  }
+
+  return power;
+}
+
 function makeScene(element, elements) {
   var objects = [];
   let nextObjectId = 0;
@@ -46,16 +61,25 @@ function rtxOn(selector, element) {
 		elements = element.children;
 	}
 
-	const canvas = document.createElement('canvas');
-	canvas.width = element.clientWidth;
-	canvas.height = element.clientHeight;
-	canvas.style.position = 'absolute';
-	canvas.style.top = '0';
-	canvas.style.left = '0';
-	canvas.style.zIndex = '-1';
-	element.appendChild(canvas);
+	// canvas must be square and of power of two
+	// use the element largest width / height and round it up to the next power of two
+	let size = closestPowerOfTwo(Math.max(element.clientWidth, element.clientHeight));
 
-	const ui = makePathTracer(canvas, makeScene(element, elements), {}, false);
+	const backgroundCanvas = document.createElement('canvas');
+	backgroundCanvas.width = size;
+	backgroundCanvas.height = size;
+	// TODO: stretch background
+	backgroundCanvas.style.position = 'absolute';
+	backgroundCanvas.style.top = '0';
+	backgroundCanvas.style.left = '0';
+	backgroundCanvas.style.width = `${element.clientWidth}px`;
+	backgroundCanvas.style.height = `${element.clientHeight}px`;
+	backgroundCanvas.style.zIndex = '-1';
+	element.appendChild(backgroundCanvas);
+
+	const ui = makePathTracer(backgroundCanvas, makeScene(element, elements), {}, false);
+
+	// copy 
 
 }
 
