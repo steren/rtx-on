@@ -66,6 +66,7 @@ function rtxOn(selector, element) {
 	let size = closestPowerOfTwo(Math.max(element.clientWidth, element.clientHeight));
 
 	const backgroundCanvas = document.createElement('canvas');
+	backgroundCanvas.inert = true;
 	backgroundCanvas.width = size;
 	backgroundCanvas.height = size;
 	// TODO: stretch background
