@@ -85,8 +85,14 @@ function rtxOn(selector, element) {
 
 	const ui = makePathTracer(backgroundCanvas, makeScene(element, elements), config, false);
 
-	// copy 
-
+	// listen for resize on the element
+	const resizeObserver = new ResizeObserver(entries => {
+		for (let entry of entries) {
+			// TODO: update canvas size and path tracer
+		}
+	}
+	);
+	resizeObserver.observe(element);
 }
 
 export {rtxOn};
