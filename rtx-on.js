@@ -23,6 +23,9 @@ function makeScene(element, elements) {
   var objects = [];
   let nextObjectId = 0;
 
+	// background element
+	objects.push(new Cube(Vector.create([-1, -1, zBase]), Vector.create([1, 1, zBase - 1]), nextObjectId++));
+
 	for (let el = 0; el < elements.length; el++) {
 		let rect = elements[el].getBoundingClientRect();
 		// ignore elements that have no height or width
