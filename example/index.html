@@ -18,7 +18,10 @@
     import {rtxOn} from 'rtx-on';
 
     window.onload = function() {
-      rtxOn(".card");
+      
+      rtxOn({ 
+        raised: [...document.querySelectorAll(".card"), ...document.querySelectorAll("header")],
+      });
     }
   </script>
 

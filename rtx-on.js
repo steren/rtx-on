@@ -52,22 +52,22 @@ function makeScene(element, elements) {
 
 /**
  * 
- * @param {String} selector: CSS selector for elevated elements, defaults to children of the passed element.
- * @param {String} backgroundElement : element to apply the effect to, defaults to the entire body.
+ * @param {HTMLElement} background : element to apply the effect to, defaults to the entire body.
+ * @param {HTMLElement} raised[]: elevated elements, defaults to children of the background element.
  */
-function rtxOn(selector, backgroundElement) {
-	if(!backgroundElement) backgroundElement = document.body;
+function rtxOn({background, raised} = {}) {
+	if(!background) background = document.body;
 
 	let elements;
-	if(selector) {
-		elements = backgroundElement.querySelectorAll(selector);
+	if(raised) {
+		elements = raised;
 	} else {
-		elements = backgroundElement.children;
+		elements = background.children;
 	}
 
 	// canvas must be square and of power of two
 	// use the element largest width / height and round it up to the next power of two
-	let size = closestPowerOfTwo(Math.max(backgroundElement.clientWidth, backgroundElement.clientHeight));
+	let size = closestPowerOfTwo(Math.max(background.clientWidth, background.clientHeight));
 
 	const backgroundCanvas = document.createElement('canvas');
 	backgroundCanvas.inert = true;
@@ -77,26 +77,26 @@ function rtxOn(selector, backgroundElement) {
 	backgroundCanvas.style.position = 'absolute';
 	backgroundCanvas.style.top = '0';
 	backgroundCanvas.style.left = '0';
-	backgroundCanvas.style.width = `${backgroundElement.clientWidth}px`;
-	backgroundCanvas.style.height = `${backgroundElement.clientHeight}px`;
+	backgroundCanvas.style.width = `${background.clientWidth}px`;
+	backgroundCanvas.style.height = `${background.clientHeight}px`;
 	backgroundCanvas.style.zIndex = '-1';
-	backgroundElement.appendChild(backgroundCanvas);
+	background.appendChild(backgroundCanvas);
 
 	const config = {
 		zoom: 76,
 		fov: 1.5,
 	}
 
-	const ui = makePathTracer(backgroundCanvas, makeScene(backgroundElement, elements), config, false);
+	const ui = makePathTracer(backgroundCanvas, makeScene(background, elements), config, false);
 
 	// listen for resize on the base element or any scene element
 	const resizeObserver = new ResizeObserver(() => {
-			ui.setObjects(makeScene(backgroundElement, elements));
-			backgroundCanvas.style.width = `${backgroundElement.clientWidth}px`;
-			backgroundCanvas.style.height = `${backgroundElement.clientHeight}px`;
+			ui.setObjects(makeScene(background, elements));
+			backgroundCanvas.style.width = `${background.clientWidth}px`;
+			backgroundCanvas.style.height = `${background.clientHeight}px`;
 			// TODO: if element changes size, we could create a bigger / smaller canvas.
 	});
-	resizeObserver.observe(backgroundElement);
+	resizeObserver.observe(background);
 	for(let el of elements) {
 		resizeObserver.observe(el);
 	}
