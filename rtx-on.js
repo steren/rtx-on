@@ -53,21 +53,21 @@ function makeScene(element, elements) {
 /**
  * 
  * @param {String} selector: CSS selector for elevated elements, defaults to children of the passed element.
- * @param {String} element : element to apply the effect to, defaults to the entire body.
+ * @param {String} backgroundElement : element to apply the effect to, defaults to the entire body.
  */
-function rtxOn(selector, element) {
-	if(!element) element = document.body;
+function rtxOn(selector, backgroundElement) {
+	if(!backgroundElement) backgroundElement = document.body;
 
 	let elements;
 	if(selector) {
-		elements = element.querySelectorAll(selector);
+		elements = backgroundElement.querySelectorAll(selector);
 	} else {
-		elements = element.children;
+		elements = backgroundElement.children;
 	}
 
 	// canvas must be square and of power of two
 	// use the element largest width / height and round it up to the next power of two
-	let size = closestPowerOfTwo(Math.max(element.clientWidth, element.clientHeight));
+	let size = closestPowerOfTwo(Math.max(backgroundElement.clientWidth, backgroundElement.clientHeight));
 
 	const backgroundCanvas = document.createElement('canvas');
 	backgroundCanvas.inert = true;
@@ -77,26 +77,26 @@ function rtxOn(selector, element) {
 	backgroundCanvas.style.position = 'absolute';
 	backgroundCanvas.style.top = '0';
 	backgroundCanvas.style.left = '0';
-	backgroundCanvas.style.width = `${element.clientWidth}px`;
-	backgroundCanvas.style.height = `${element.clientHeight}px`;
+	backgroundCanvas.style.width = `${backgroundElement.clientWidth}px`;
+	backgroundCanvas.style.height = `${backgroundElement.clientHeight}px`;
 	backgroundCanvas.style.zIndex = '-1';
-	element.appendChild(backgroundCanvas);
+	backgroundElement.appendChild(backgroundCanvas);
 
 	const config = {
 		zoom: 76,
 		fov: 1.5,
 	}
 
-	const ui = makePathTracer(backgroundCanvas, makeScene(element, elements), config, false);
+	const ui = makePathTracer(backgroundCanvas, makeScene(backgroundElement, elements), config, false);
 
 	// listen for resize on the base element or any scene element
 	const resizeObserver = new ResizeObserver(() => {
-			ui.setObjects(makeScene(element, elements));
-			backgroundCanvas.style.width = `${element.clientWidth}px`;
-			backgroundCanvas.style.height = `${element.clientHeight}px`;
+			ui.setObjects(makeScene(backgroundElement, elements));
+			backgroundCanvas.style.width = `${backgroundElement.clientWidth}px`;
+			backgroundCanvas.style.height = `${backgroundElement.clientHeight}px`;
 			// TODO: if element changes size, we could create a bigger / smaller canvas.
 	});
-	resizeObserver.observe(element);
+	resizeObserver.observe(backgroundElement);
 	for(let el of elements) {
 		resizeObserver.observe(el);
 	}
