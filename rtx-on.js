@@ -78,7 +78,12 @@ function rtxOn(selector, element) {
 	backgroundCanvas.style.zIndex = '-1';
 	element.appendChild(backgroundCanvas);
 
-	const ui = makePathTracer(backgroundCanvas, makeScene(element, elements), {}, false);
+	const config = {
+		zoom: 76,
+		fov: 1.5,
+	}
+
+	const ui = makePathTracer(backgroundCanvas, makeScene(element, elements), config, false);
 
 	// copy 
 
