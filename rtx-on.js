@@ -69,6 +69,11 @@ function rtxOn({background, raised} = {}) {
 
 	if(!background) background = document.documentElement;
 
+	// remove box shadow on all elements
+	for(let el of elements) {
+		el.style.boxShadow = 'none';
+	}
+
 	// canvas must be square and of power of two
 	// use the element largest width / height and round it up to the next power of two
 	let size = closestPowerOfTwo(Math.max(background.clientWidth, background.clientHeight));
