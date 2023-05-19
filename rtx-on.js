@@ -67,7 +67,15 @@ function rtxOn({background, raised} = {}) {
 		}
 	}
 
-	if(!background) background = document.documentElement;
+	if(!background) {
+		// use <body> if bigger than viewport. Otherwise, use <html>, which is equal to viewport height
+		if(document.documentElement.clientHeight > document.body.clientHeight) {
+			background = document.documentElement;
+		} else {
+			background = document.body;
+		}
+	}
+	
 
 	// remove box shadow on all elements
 	for(let el of elements) {
