@@ -19,6 +19,7 @@ function closestPowerOfTwo(num) {
 }
 
 function makeScene(element, elements) {
+	const zBase = -1;
   var objects = [];
   let nextObjectId = 0;
 
@@ -31,13 +32,13 @@ function makeScene(element, elements) {
 		let minCorner = Vector.create([
 			2 * rect.left / (element.clientWidth) - 1,
 			-1 * 2 * rect.top / (element.clientHeight) + 1,
-			-1,
+			zBase,
 		]);
 
 		let maxCorner = Vector.create([
 			2 * (rect.left + rect.width) / (element.clientWidth) - 1,
 			-1 * 2 * (rect.top + rect.height) / (element.clientHeight) + 1,
-			zHeight -1,
+			zHeight + zBase,
 		]);
 
 		objects.push(new Cube(minCorner, maxCorner, nextObjectId++));
