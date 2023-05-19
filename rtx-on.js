@@ -53,17 +53,21 @@ function makeScene(element, elements) {
 /**
  * 
  * @param {HTMLElement} background : element to apply the effect to, defaults to the entire body.
- * @param {HTMLElement} raised[]: elevated elements, defaults to children of the background element.
+ * @param {HTMLElement} raised[]: elevated elements, defaults to children of the background element if one is passed or to children of the body if none.
  */
 function rtxOn({background, raised} = {}) {
-	if(!background) background = document.body;
-
 	let elements;
 	if(raised) {
 		elements = raised;
 	} else {
-		elements = background.children;
+		if(background) {
+			elements = background.children;
+		} else {
+			elements = document.body.children;
+		}
 	}
+
+	if(!background) background = document.documentElement;
 
 	// canvas must be square and of power of two
 	// use the element largest width / height and round it up to the next power of two
