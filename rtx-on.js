@@ -55,7 +55,7 @@ function makeScene(element, elements) {
  * @param {HTMLElement} background : element to apply the effect to, defaults to the entire body.
  * @param {HTMLElement} raised[]: elevated elements, defaults to children of the background element if one is passed or to children of the body if none.
  */
-function rtxOn({background, raised} = {}) {
+function on({background, raised} = {}) {
 	let elements;
 	if(raised) {
 		elements = raised;
@@ -120,4 +120,4 @@ function rtxOn({background, raised} = {}) {
 	}
 }
 
-export {rtxOn};
+export {on};
