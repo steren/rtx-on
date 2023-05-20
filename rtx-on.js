@@ -18,13 +18,32 @@ function closestPowerOfTwo(num) {
   return power;
 }
 
+/**
+ * Extract background color of element as RGB array.
+ * Only supports rgb() syntax
+ * If cannot extract colors, will return white.
+ * @param {HTMLElement} element 
+ * @returns 
+ */
+function extractRGBColor(element) {
+	const color = window.getComputedStyle(element).backgroundColor;
+	if(color.startsWith('rgb')) {
+		const rgb = color.match(/(\d+)/g);
+		return [parseInt(rgb[0]) / 255, parseInt(rgb[1]) / 255, parseInt(rgb[2]) / 255];
+	} else {
+		console.error(`Unsupported color format. Only rgb() is supported. returning white. Received ${color}.`);
+		return [1, 1, 1];
+	}
+
+}
+
 function makeScene(element, elements) {
 	const zBase = -1;
   var objects = [];
   let nextObjectId = 0;
 
 	// background element
-	objects.push(new Cube(Vector.create([-1, -1, zBase]), Vector.create([1, 1, zBase - 1]), nextObjectId++));
+	objects.push(new Cube(Vector.create([-1, -1, zBase]), Vector.create([1, 1, zBase - 1]), nextObjectId++, Vector.create(extractRGBColor(element))));
 
 	for (let el = 0; el < elements.length; el++) {
 		let rect = elements[el].getBoundingClientRect();
@@ -44,7 +63,7 @@ function makeScene(element, elements) {
 			zHeight + zBase,
 		]);
 
-		objects.push(new Cube(minCorner, maxCorner, nextObjectId++));
+		objects.push(new Cube(minCorner, maxCorner, nextObjectId++, Vector.create(extractRGBColor(elements[el]))));
 	}
 
   return objects;
