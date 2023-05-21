@@ -1,6 +1,7 @@
 import {makePathTracer, Cube} from 'webgl-path-tracing';
 import { Vector } from 'sylvester';
 
+// Height of the elements
 const zHeight = 0.1;
 
 function closestPowerOfTwo(num) {
@@ -49,7 +50,7 @@ function removeStyle(element) {
 }
 
 function makeScene(background, elements) {
-	const zBase = -0.9; // -1 is room wall.
+	const zBase = 0; // -1 is room wall.
   var objects = [];
   let nextObjectId = 0;
 
@@ -139,7 +140,7 @@ function on({background, raised} = {}) {
 	const config = {
 		zoom: 76,
 		fov: 1.5,
-		lightPosition: [0.8, 0.8, -0.5],
+		lightPosition: [0.8, 0.8, 0.5],
 	}
 
 	const ui = makePathTracer(backgroundCanvas, makeScene(background, elements), config, false);
