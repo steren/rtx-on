@@ -48,13 +48,13 @@ function removeStyle(element) {
 	element.style.backgroundColor = 'transparent';
 }
 
-function makeScene(element, elements) {
-	const zBase = -1;
+function makeScene(background, elements) {
+	const zBase = -0.9; // -1 is room wall.
   var objects = [];
   let nextObjectId = 0;
 
 	// background element
-	objects.push(new Cube(Vector.create([-1, -1, zBase]), Vector.create([1, 1, zBase - 1]), nextObjectId++, Vector.create(extractRGBColor(element))));
+	objects.push(new Cube(Vector.create([-1, -1, zBase - 1 ]), Vector.create([1, 1, zBase]), nextObjectId++, Vector.create(extractRGBColor(background))));
 
 	for (let el = 0; el < elements.length; el++) {
 		let rect = elements[el].getBoundingClientRect();
@@ -63,14 +63,14 @@ function makeScene(element, elements) {
 
 		// FIXME: handle scroll position
 		let minCorner = Vector.create([
-			2 * rect.left / (element.clientWidth) - 1,
-			-1 * 2 * rect.top / (element.clientHeight) + 1,
+			2 * rect.left / (background.clientWidth) - 1,
+			-1 * 2 * rect.top / (background.clientHeight) + 1,
 			zBase,
 		]);
 
 		let maxCorner = Vector.create([
-			2 * (rect.left + rect.width) / (element.clientWidth) - 1,
-			-1 * 2 * (rect.top + rect.height) / (element.clientHeight) + 1,
+			2 * (rect.left + rect.width) / (background.clientWidth) - 1,
+			-1 * 2 * (rect.top + rect.height) / (background.clientHeight) + 1,
 			zHeight + zBase,
 		]);
 
@@ -101,9 +101,19 @@ function on({background, raised} = {}) {
 		// use <body> if bigger than viewport. Otherwise, use <html>, which is equal to viewport height
 		if(document.documentElement.clientHeight > document.body.clientHeight) {
 			background = document.documentElement;
+			// if body has a background color, set it on body too
+			if(window.getComputedStyle(document.body).backgroundColor !== 'rgba(0, 0, 0, 0)') {
+				background.style.backgroundColor = window.getComputedStyle(document.body).backgroundColor;
+			}
+
 		} else {
 			background = document.body;
+			// if html has a background color, set it on body too
+			if(window.getComputedStyle(document.documentElement).backgroundColor !== 'rgba(0, 0, 0, 0)') {
+				background.style.backgroundColor = window.getComputedStyle(document.documentElement).backgroundColor;
+			}
 		}
+
 	}
 
 	// remove drop shadow and background color from elements, store them in data attributes
