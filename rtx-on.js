@@ -27,7 +27,7 @@ function closestPowerOfTwo(num) {
  * @returns 
  */
 function extractRGBColor(element) {
-	const color = element.dataset.backgroundColor;
+	const color = element.dataset.backgroundColor || window.getComputedStyle(element).backgroundColor;
 	if(color.startsWith('rgb')) {
 		const rgb = color.match(/(\d+)/g);
 		return [parseInt(rgb[0]) / 255, parseInt(rgb[1]) / 255, parseInt(rgb[2]) / 255];
@@ -47,6 +47,13 @@ function removeStyle(element) {
 	// store original background color in a data attribute
 	element.dataset.backgroundColor = window.getComputedStyle(element).backgroundColor;
 	element.style.backgroundColor = 'transparent';
+
+	// if element has white background,
+	// set mix-blend-mode: multiply so that any white children blends nicely with the (now potentially gray) background
+	// TODO: Should we do that more often?
+	if(element.dataset.backgroundColor === 'rgb(255, 255, 255)') {
+		element.style.mixBlendMode = 'multiply';
+	}
 }
 
 function makeScene(background, elements) {
@@ -62,7 +69,7 @@ function makeScene(background, elements) {
 		// ignore elements that have no height or width
 		if(rect.height === 0 || rect.width === 0) continue;
 
-		// FIXME: handle scroll position
+		// TODO: should we also handle scroll position?
 		let minCorner = Vector.create([
 			2 * rect.left / (background.clientWidth) - 1,
 			-1 * (2 * (rect.top + rect.height) / (background.clientHeight) - 1),
@@ -129,7 +136,6 @@ function on({background, raised} = {}) {
 	backgroundCanvas.inert = true;
 	backgroundCanvas.width = size;
 	backgroundCanvas.height = size;
-	// TODO: stretch background
 	backgroundCanvas.style.position = 'absolute';
 	backgroundCanvas.style.top = '0';
 	backgroundCanvas.style.left = '0';
