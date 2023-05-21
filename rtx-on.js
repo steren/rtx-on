@@ -65,13 +65,14 @@ function makeScene(background, elements) {
 		// FIXME: handle scroll position
 		let minCorner = Vector.create([
 			2 * rect.left / (background.clientWidth) - 1,
-			-1 * 2 * rect.top / (background.clientHeight) + 1,
+			-1 * (2 * (rect.top + rect.height) / (background.clientHeight) - 1),
+
 			zBase,
 		]);
 
 		let maxCorner = Vector.create([
 			2 * (rect.left + rect.width) / (background.clientWidth) - 1,
-			-1 * 2 * (rect.top + rect.height) / (background.clientHeight) + 1,
+			-1 * (2 * rect.top / (background.clientHeight) - 1),
 			zHeight + zBase,
 		]);
 
@@ -140,7 +141,7 @@ function on({background, raised} = {}) {
 	const config = {
 		zoom: 76,
 		fov: 1.5,
-		lightPosition: [0.8, 0.8, 0.5],
+		lightPosition: [0.8, 0.8, 1],
 	}
 
 	const ui = makePathTracer(backgroundCanvas, makeScene(background, elements), config, false);
