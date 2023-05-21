@@ -19,14 +19,14 @@ function closestPowerOfTwo(num) {
 }
 
 /**
- * Extract background color of element as RGB array.
+ * Extract background color (stored as data attribute) of element as RGB array.
  * Only supports rgb() syntax
  * If cannot extract colors, will return white.
  * @param {HTMLElement} element 
  * @returns 
  */
 function extractRGBColor(element) {
-	const color = window.getComputedStyle(element).backgroundColor;
+	const color = element.dataset.backgroundColor;
 	if(color.startsWith('rgb')) {
 		const rgb = color.match(/(\d+)/g);
 		return [parseInt(rgb[0]) / 255, parseInt(rgb[1]) / 255, parseInt(rgb[2]) / 255];
@@ -34,7 +34,18 @@ function extractRGBColor(element) {
 		console.error(`Unsupported color format. Only rgb() is supported. returning white. Received ${color}.`);
 		return [1, 1, 1];
 	}
+}
 
+// Remove background color and box shadow from element
+function removeStyle(element) {
+	
+	// store original box shadow in a data attribute
+	element.dataset.boxShadow = window.getComputedStyle(element).boxShadow;
+	element.style.boxShadow = 'none';
+
+	// store original background color in a data attribute
+	element.dataset.backgroundColor = window.getComputedStyle(element).backgroundColor;
+	element.style.backgroundColor = 'transparent';
 }
 
 function makeScene(element, elements) {
@@ -94,12 +105,9 @@ function on({background, raised} = {}) {
 			background = document.body;
 		}
 	}
-	
 
-	// remove box shadow on all elements
-	for(let el of elements) {
-		el.style.boxShadow = 'none';
-	}
+	// remove drop shadow and background color from elements, store them in data attributes
+	[...elements, background].map(removeStyle);
 
 	// canvas must be square and of power of two
 	// use the element largest width / height and round it up to the next power of two
