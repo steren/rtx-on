@@ -141,7 +141,7 @@ function on({background, raised} = {}) {
 	const config = {
 		zoom: 76,
 		fov: 1.5,
-		lightPosition: [0.8, 0.8, 1],
+		lightPosition: [0.8, 0.8, 0.8],
 	}
 
 	const ui = makePathTracer(backgroundCanvas, makeScene(background, elements), config, false);
