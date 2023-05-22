@@ -4,6 +4,11 @@ import { Vector } from 'sylvester';
 // Height of the elements
 const zHeight = 0.1;
 
+let backgroundElement;
+let backgroundCanvas;
+let raisedElements;
+
+
 function closestPowerOfTwo(num) {
   // If num is already a power of two, return num
   if ((num & (num - 1)) === 0) {
@@ -52,7 +57,20 @@ function removeStyle(element) {
 	// set mix-blend-mode: multiply so that any white children blends nicely with the (now potentially gray) background
 	// TODO: Should we do that more often?
 	if(element.dataset.backgroundColor === 'rgb(255, 255, 255)') {
+		element.dataset.mixBlendMode = window.getComputedStyle(element).mixBlendMode;
 		element.style.mixBlendMode = 'multiply';
+	}
+}
+
+function restoreStyle (element) {
+	if(element.dataset.boxShadow) {
+		element.style.boxShadow = element.dataset.boxShadow;
+	}
+	if(element.dataset.backgroundColor) {
+		element.style.backgroundColor = element.dataset.backgroundColor;
+	}
+	if(element.dataset.mixBlendMode) {
+		element.style.mixBlendMode = element.dataset.mixBlendMode;
 	}
 }
 
@@ -89,60 +107,53 @@ function makeScene(background, elements) {
   return objects;
 }
 
-/**
- * 
- * @param {HTMLElement} background : element to apply the effect to, defaults to the entire body.
- * @param {HTMLElement} raised[]: elevated elements, defaults to children of the background element if one is passed or to children of the body if none.
- */
-function on({background, raised} = {}) {
-	let elements;
+function initRTX({background, raised} = {}) {
 	if(raised) {
-		elements = raised;
+		raisedElements = raised;
 	} else {
 		if(background) {
-			elements = background.children;
+			raisedElements = backgroundElement.children;
 		} else {
-			elements = document.body.children;
+			raisedElements = document.body.children;
 		}
 	}
 
 	if(!background) {
 		// use <body> if bigger than viewport. Otherwise, use <html>, which is equal to viewport height
 		if(document.documentElement.clientHeight > document.body.clientHeight) {
-			background = document.documentElement;
+			backgroundElement = document.documentElement;
 			// if body has a background color, set it on body too
 			if(window.getComputedStyle(document.body).backgroundColor !== 'rgba(0, 0, 0, 0)') {
-				background.style.backgroundColor = window.getComputedStyle(document.body).backgroundColor;
+				backgroundElement.style.backgroundColor = window.getComputedStyle(document.body).backgroundColor;
 			}
 
 		} else {
-			background = document.body;
+			backgroundElement = document.body;
 			// if html has a background color, set it on body too
 			if(window.getComputedStyle(document.documentElement).backgroundColor !== 'rgba(0, 0, 0, 0)') {
-				background.style.backgroundColor = window.getComputedStyle(document.documentElement).backgroundColor;
+				backgroundElement.style.backgroundColor = window.getComputedStyle(document.documentElement).backgroundColor;
 			}
 		}
-
+	} else {
+		backgroundElement = background;
 	}
-
-	// remove drop shadow and background color from elements, store them in data attributes
-	[...elements, background].map(removeStyle);
 
 	// canvas must be square and of power of two
 	// use the element largest width / height and round it up to the next power of two
-	let size = closestPowerOfTwo(Math.max(background.clientWidth, background.clientHeight));
+	let size = closestPowerOfTwo(Math.max(backgroundElement.clientWidth, backgroundElement.clientHeight));
 
-	const backgroundCanvas = document.createElement('canvas');
+	backgroundCanvas = document.createElement('canvas');
 	backgroundCanvas.inert = true;
 	backgroundCanvas.width = size;
 	backgroundCanvas.height = size;
 	backgroundCanvas.style.position = 'absolute';
 	backgroundCanvas.style.top = '0';
 	backgroundCanvas.style.left = '0';
-	backgroundCanvas.style.width = `${background.clientWidth}px`;
-	backgroundCanvas.style.height = `${background.clientHeight}px`;
+	backgroundCanvas.style.width = `${backgroundElement.clientWidth}px`;
+	backgroundCanvas.style.height = `${backgroundElement.clientHeight}px`;
 	backgroundCanvas.style.zIndex = '-1';
-	background.appendChild(backgroundCanvas);
+	backgroundCanvas.style.overflow = 'hidden';
+	backgroundElement.appendChild(backgroundCanvas);
 
 	const config = {
 		zoom: 76,
@@ -150,19 +161,104 @@ function on({background, raised} = {}) {
 		lightPosition: [0.8, 0.8, 0.8],
 	}
 
-	const ui = makePathTracer(backgroundCanvas, makeScene(background, elements), config, false);
+	const ui = makePathTracer(backgroundCanvas, makeScene(backgroundElement, raisedElements), config, false);
 
 	// listen for resize on the base element or any scene element
 	const resizeObserver = new ResizeObserver(() => {
-			ui.setObjects(makeScene(background, elements));
-			backgroundCanvas.style.width = `${background.clientWidth}px`;
-			backgroundCanvas.style.height = `${background.clientHeight}px`;
+			ui.setObjects(makeScene(backgroundElement, raisedElements));
+			backgroundCanvas.style.width = `${backgroundElement.clientWidth}px`;
+			backgroundCanvas.style.height = `${backgroundElement.clientHeight}px`;
 			// TODO: if element changes size, we could create a bigger / smaller canvas.
 	});
-	resizeObserver.observe(background);
-	for(let el of elements) {
+	resizeObserver.observe(backgroundElement);
+	for(let el of raisedElements) {
 		resizeObserver.observe(el);
 	}
 }
 
-export {on};
+/**
+ * 
+ * @param {HTMLElement} options.background : element to apply the effect to, defaults to the entire body.
+ * @param {HTMLElement} options.raised[]: elevated elements, defaults to children of the background element if one is passed or to children of the body if none.
+ */
+function on(options) {
+	if(!backgroundCanvas) {
+		initRTX(options);
+	} else {
+		// unhide canvas
+		backgroundCanvas.style.display = 'block';
+	}
+
+	// remove drop shadow and background color from elements, store them in data attributes
+	[...raisedElements, backgroundElement].map(removeStyle);
+	
+}
+
+/**
+ * Restore 
+ */
+function off() {
+	// hide canvas
+	backgroundCanvas.style.display = 'none';
+
+	// restore original styles
+	[...raisedElements, backgroundElement].map(restoreStyle);
+}
+
+/**
+ * Displays an "RTX OFF / ON" button on the page.
+ * Mainly for fun.
+ */
+function button() {
+	// Create the checkbox element
+	let rtxCheckbox = document.createElement('input');
+	rtxCheckbox.type = 'checkbox';
+	rtxCheckbox.id = 'rtxCheckbox'; // add an id to the checkbox for styling
+
+	// Set the initial checkbox state
+	rtxCheckbox.checked = true;
+
+	// Set the common checkbox styles
+	rtxCheckbox.style.display = 'none'; // Hide the actual checkbox
+
+	// Create a label for the checkbox
+	let rtxLabel = document.createElement('label');
+	rtxLabel.htmlFor = 'rtxCheckbox';
+	rtxLabel.id = 'rtxLabel'; // add an id to the label for styling
+	rtxLabel.style.backgroundColor = '#76b900';
+	rtxLabel.style.color = 'black';
+	rtxLabel.style.fontFamily = 'Arial, sans-serif';
+	rtxLabel.style.padding = '15px 32px';
+	rtxLabel.style.textAlign = 'center';
+	rtxLabel.style.display = 'inline-block';
+	rtxLabel.style.fontSize = '16px';
+	rtxLabel.style.cursor = 'pointer';
+	rtxLabel.innerHTML = 'RTX <strong>ON</strong>';
+
+	// Set the width and position of the label
+	rtxLabel.style.width = '100px'; // Set a fixed width
+	rtxLabel.style.position = 'fixed';
+	rtxLabel.style.bottom = '20px';
+	rtxLabel.style.right = '0'; // Position the label at the right
+
+	// Add a change event to toggle RTX state
+	rtxCheckbox.onchange = function() {
+			rtxLabel.innerHTML = this.checked ? 'RTX <strong>ON</strong>' : 'RTX <strong>OFF</strong>';
+			if (this.checked) {
+					rtxLabel.style.backgroundColor = '#76b900';
+					rtxLabel.style.color = 'black';
+					on();
+			} else {
+					rtxLabel.style.backgroundColor = 'black';
+					rtxLabel.style.color = 'white';
+					off();
+			}
+			console.log(`RTX is ${this.checked ? "on" : "off"}.`);
+	};
+
+	// Add the checkbox and the label to the body of the document
+	document.body.appendChild(rtxCheckbox);
+	document.body.appendChild(rtxLabel);
+}
+
+export {on, off, button};
