@@ -4,6 +4,9 @@ import { Vector } from 'sylvester';
 // Height of the elements
 const zHeight = 0.1;
 
+// TODO: adjust this based some hardware capabilities?
+const maxSize = 2048;
+
 let backgroundElement;
 let backgroundCanvas;
 let raisedElements;
@@ -140,7 +143,7 @@ function initRTX({background, raised} = {}) {
 
 	// canvas must be square and of power of two
 	// use the element largest width / height and round it up to the next power of two
-	let size = closestPowerOfTwo(Math.max(backgroundElement.clientWidth, backgroundElement.clientHeight));
+	let size = Math.min(closestPowerOfTwo(Math.max(backgroundElement.clientWidth, backgroundElement.clientHeight)), maxSize);
 
 	backgroundCanvas = document.createElement('canvas');
 	backgroundCanvas.inert = true;
