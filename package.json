@@ -3,7 +3,7 @@
   "version": "1.6.0",
   "description": "Use proper ray traced shadow instead of the boring box-shadow",
   "directories": {
-    "example": "example"
+    "example": "examples"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -14,11 +14,7 @@
     "url": "git+https://github.com/steren/rtx-on.git"
   },
   "keywords": [
-    "raytracing",
-    "custom",
-    "element",
-    "web",
-    "component"
+    "raytracing"
   ],
   "author": "Steren Giannini <steren.giannini@gmail.com>",
   "license": "Apache-2.0",
@@ -26,12 +22,6 @@
     "url": "https://github.com/steren/rtx-on/issues"
   },
   "homepage": "https://github.com/steren/rtx-on#readme",
-  "devDependencies": {
-    "serve": "^14.2.0"
-  },
-  "dependencies": {
-    "three": "^0.151.3"
-  },
   "module": "./rtx-on.js",
   "exports": {
     ".": "./rtx-on.js"
