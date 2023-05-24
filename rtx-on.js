@@ -1,5 +1,5 @@
-import {makePathTracer, Cube} from 'webgl-path-tracing';
-import { Vector } from 'sylvester';
+import {makePathTracer, Cube} from './webgl-path-tracing/webgl-path-tracing.js';
+import {Vector} from './webgl-path-tracing/sylvester.src.js';
 
 // Height of the elements
 const zHeight = 0.1;

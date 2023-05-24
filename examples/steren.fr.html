@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<!-- saved from url=(0018)https://steren.fr/ -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>Steren Giannini</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Personal works">
+  <meta name="author" content="Steren Giannini">
+  <meta name="theme-color" content="#00796B">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" type="image/svg+xml" href="https://steren.fr/icon.svg">
+  
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:creator" content="@steren">
+  <meta name="twitter:title" content="Steren Giannini">
+  <meta name="twitter:description" content="Works">
+  <meta name="twitter:image" content="http://steren.fr/icon.png">
+
+  <meta property="og:type" content="profile">
+  <meta property="og:title" content="Steren Giannini">
+  <meta property="og:description" content="Works">
+  <meta property="og:url" content="http://steren.fr">
+  <meta property="og:image" content="http://steren.fr/icon.png">
+  <meta property="og:profile:first_name" content="Steren">
+  <meta property="og:profile:last_name" content="Giannini">
+
+  <script type="application/ld+json">
+  {
+    "@context": "http://schema.org",
+    "@type": "Person",
+    "url": "http://steren.fr",
+    "name": "Steren Giannini",
+    "givenName": "Steren",
+    "familyName": "Giannini",
+    "image": "http://steren.fr/icon.png"
+  }
+  </script>
+
+  <link rel="preload" href="./steren.fr_files/avatar.webp" as="image">
+  <!-- TODO: Keep these updated with visible items -->
+  <link rel="preload" href="./steren.fr_files/carbon-footprint-screenshot.webp" as="image">
+  <link rel="preload" href="./steren.fr_files/cloud-run.svg" as="image">
+  <link rel="preload" href="./steren.fr_files/error-reporting-screenshot.webp" as="image">
+  <link rel="preload" href="./steren.fr_files/factory.svg" as="image">
+  <link rel="preload" href="./steren.fr_files/hackdayparis.webp" as="image">
+  <link rel="preload" href="./steren.fr_files/cadeaux.svg" as="image">
+  <link rel="preload" href="./steren.fr_files/capoda.webp" as="image">
+
+  <!--
+    Colors
+    (picked from http://sankk.in/material-mixer/, following http://www.google.com/design/spec/style/color.html)
+
+    Primary Shade: #009688
+    Primary Light: #B2DFDB
+    Primary Dark: #00796B
+    Accent Shade: #FFAB40
+    Accent Light (Fallback): #FFD180
+  -->
+
+  <style>
+    :root {
+      --primary-light: hsl(173, 100%, 40%);
+      --primary-dark: hsla(173, 100%, 24%);
+    }
+    html {
+      background-color: #E5E5E5;
+      height: 100%;
+      margin: 0;
+      font-family: sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      html {
+        background-color: #121212;
+        color: #FFFFFF;
+      }
+    }
+
+    body, h1, h2, h3, h4, h5, h6, p, ol, ul {
+      margin: 0;
+      padding: 0;
+      font-weight: 300;
+    }
+    a, a:visited {
+      color: var(--primary-dark);
+      text-decoration:none;
+    }
+    @media (prefers-color-scheme: dark) {
+       a, a:visited {
+           color: var(--primary-light);
+       } 
+    } 
+    .container {
+        margin-right: auto;
+        margin-left: auto;
+        padding-right: 1rem;
+        padding-left: 1rem;
+        width: calc(100% - 2 * 1rem);
+    }
+    @media (min-width: 1400px) {
+      .container {
+        max-width: 1300px;
+      }
+    }
+
+    .card {
+      display: block;
+      background-color: white;
+      box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+      margin: 1rem;
+      border-radius: 2px;
+    }
+    @media (prefers-color-scheme: dark) {
+        .card {
+            background-color: rgba(255,255,255,0.05);
+        }
+    }
+    .card .inner {
+      padding: 1rem;
+    }
+
+    header {
+      color: white;
+      background: var(--primary-dark);
+      box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+      height: 6rem;
+      display: flex;
+      align-items: center;
+    }
+    header nav a,
+    header nav a:visited {
+      color: white;
+    }
+
+    .avatar {
+      border-radius: 50%;
+    }
+
+    /* trick to force image aspect ratio bafore it is downloaded */
+    .card .image-container {
+      width: 100%;
+      padding-bottom: calc((140/280)*100%);
+      position: relative;
+    }
+    .card .logo-container {
+      width: 40%;
+      padding-bottom: 40%;
+      position: relative;
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .card .image,
+    .card .logo {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+    }
+    @media (prefers-color-scheme: dark) {
+        .card .image {
+            opacity: .9;
+            background-color: white;
+        }
+    }
+
+    #intro {
+      margin-left: 1em;
+      margin-right: 1em;
+      display: flex;
+    }
+    #intro .card {
+      margin-left: auto;
+      margin-right: auto;
+    }
+    #intro .bio {
+      line-height: 1.3em;
+    }
+
+    #intro .card,
+    #work-list steren-work {
+      width: 400px;
+    }
+
+    #works h2 {
+      text-align: center;
+    }
+
+    #work-list {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: space-evenly;
+    }
+
+    #work-list steren-work {
+      margin-left: 1rem;
+      margin-right: 1rem;
+    }
+
+    #work-list steren-work a {
+      text-decoration: none;
+      color: black;
+    }
+    @media (prefers-color-scheme: dark) {
+        #work-list steren-work a {
+            color: #FFFFFF;
+        }
+    }
+        
+    #work-list steren-work:hover {
+      background-color: #DDDDDD;
+    }
+    #work-list steren-work:active {
+      background-color: #CCCCCC;
+    }
+    @media (prefers-color-scheme: dark) {
+        #work-list steren-work:hover {
+            background-color: rgba(255,255,255,0.07);
+        }
+        #work-list steren-work:active {
+            background-color: rgba(255,255,255,0.1);
+        }
+    }
+    #work-list steren-work .title {
+      font-size: 2rem;
+      font-weight: 300;
+      margin-bottom: 1rem;
+      margin-top: 0;
+    }
+
+    #work-list steren-work {
+      display: none;
+    }
+    #work-list steren-work[data-featured="true"] {
+      display: block;
+    }
+
+  </style>
+
+  <script type="module">
+    import * as rtx from '../rtx-on.js';
+
+    window.onload = function() {
+      rtx.on({ 
+        raised: [...document.querySelectorAll(".card"), ...document.querySelectorAll("header")],
+      });
+      rtx.button();
+    }
+  </script>
+</head>
+
+<body>
+  <header>
+    <div class="container">
+      <h1>Steren Giannini</h1>
+
+      <nav id="links">
+        <a href="http://blog.steren.fr/" target="_blank" rel="me">Blog</a>
+        -
+        <a href="http://labs.steren.fr/" target="_blank" rel="me">Labs</a>
+        -
+        <a href="http://talks.steren.fr/" target="_blank" rel="me">Talks</a>
+        -
+        <a href="https://twitter.com/steren" target="_blank" rel="me">Twitter</a>
+        -
+        <a href="https://status.steren.fr/@steren" target="_blank" rel="me">Mastodon</a>
+        -
+        <a href="https://matrix.to/#/@steren:matrix.org" target="_blank" rel="me">Matrix</a>
+        -
+        <a href="https://www.linkedin.com/in/steren" target="_blank" rel="me">LinkedIn</a>
+        -
+        <a href="https://github.com/steren" target="_blank" rel="me">GitHub</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="container">
+    <section id="intro">
+      <div class="card">
+        <div class="logo-container">
+          <img class="logo avatar" src="./steren.fr_files/avatar.webp" alt="Steren&#39;s profile picture">
+        </div>
+        <p class="inner bio">
+            I am Steren, engineer from <a href="https://www.ec-lyon.fr/" target="_blank" rel="noopener">Centrale Lyon</a> and today Product Manager at <a href="https://cloud.google.com/" target="_blank" rel="noopener">Google</a>.<br>
+            Previously, I co-founded <a href="https://www.beansight.com/" target="_blank" rel="noopener">beansight</a>, was CTO of <a href="https://www.dailymotion.com/video/xuy6pq" target="_blank" rel="noopener">Joshfire</a> and helped <a href="https://sketchfab.com/" target="_blank" rel="noopener">Sketchfab</a>.<br>
+          <br>
+            I <a href="https://twitter.com/steren" target="_blank" rel="noopener">tweet</a>, <a href="https://talks.steren.fr/" target="_blank" rel="noopener">talk</a>, <a href="https://labs.steren.fr/" target="_blank" rel="noopener">experiment</a>, <a href="https://blog.steren.fr/" target="_blank" rel="noopener">blog</a> and build things:
+        </p>
+      </div>
+    </section>
+
+    <section id="works">
+        <h2>Works</h2>
+        <div id="work-list">
+          <steren-work class="card" data-id="cloud-run" data-featured="true" data-size="20" data-completion="in-progress" data-seriousness="serious" data-type="product" data-participation="lead" data-category="" data-date="2021">
+            <a href="https://cloud.google.com/carbon-footprint/" title="Carbon Footprint website" target="_blank" rel="noopener">
+                <div class="image-container">
+                <img class="image" loading="lazy" src="./steren.fr_files/carbon-footprint-screenshot.webp" alt="Carbon Footprint screenshot">
+                </div>
+                <div class="inner">
+                <h3 class="title">Carbon Footprint</h3>
+                <p>Understand and reduce your Google Cloud carbon emissions.</p>
+                </div>
+            </a>
+          </steren-work>
+          <steren-work class="card" data-id="cloud-run" data-featured="true" data-size="50" data-completion="in-progress" data-seriousness="serious" data-type="product" data-participation="lead" data-category="" data-date="2019">
+            <a href="https://cloud.google.com/run/" title="Cloud Run website" target="_blank" rel="noopener">
+                <div class="logo-container">
+                <img class="logo" src="./steren.fr_files/cloud-run.svg" alt="Cloud Run logo">
+                </div>
+                <div class="inner">
+                <h3 class="title">Cloud Run</h3>
+                <p>Run containers on a fully managed environment.</p>
+                </div>
+            </a>
+            </steren-work>
+            <steren-work class="card" data-id="error-reporting" data-featured="true" data-size="20" data-completion="done" data-seriousness="serious" data-type="product" data-participation="contribution" data-category="web" data-date="2016">
+            <a href="https://cloud.google.com/error-reporting/" title="Cloud Error Reporting product page" target="_blank" rel="noopener">
+                <div class="image-container">
+                <img class="image" loading="lazy" src="./steren.fr_files/error-reporting-screenshot.webp" alt="Error Reporting screenshot">
+                </div>
+                <div class="inner">
+                <h3 class="title">Error Reporting</h3>
+                <p>Google Cloud solution to identify and understand application errors.</p>
+                </div>
+            </a>
+            </steren-work>
+            <steren-work class="card" data-id="factory" data-featured="true" data-size="15" data-completion="done" data-seriousness="serious" data-type="product" data-participation="lead" data-category="web" data-date="2012">
+            <a href="https://www.dailymotion.com/video/xuy6pq" title="Joshfire Factory tour" target="_blank" rel="noopener">
+                <div class="logo-container">
+                <img class="logo" src="./steren.fr_files/factory.svg" alt="Joshfire Factory logo">
+                </div>
+                <div class="inner">
+                <h3 class="title">Joshfire Factory</h3>
+                <p>Multi-device application platform.</p>
+                </div>
+            </a>
+            </steren-work>
+            <steren-work class="card" data-id="cadeaux" data-featured="true" data-size="3" data-completion="wip" data-seriousness="notsoserious" data-type="code" data-participation="lead" data-category="web" data-date="2010">
+            <a href="http://www.cadeaux-entre-nous.fr/" title="cadeaux-entre-nous.fr" target="_blank" rel="noopener">
+                <div class="image-container">
+                <img class="image" loading="lazy" src="./steren.fr_files/cadeaux.svg" alt="Cadeaux entre nous picture">
+                </div>
+                <div class="inner">
+                <h3 class="title">Cadeaux entre nous</h3>
+                <p>Secret Santa website.</p>
+                </div>
+            </a>
+            </steren-work>
+            <steren-work class="card" data-id="capoda" data-featured="true" data-size="5" data-completion="done" data-seriousness="serious" data-type="graphic" data-participation="lead" data-category="Animation" data-date="2008">
+            <a href="https://www.youtube.com/watch?v=khWXdkryBE4" title="Watch CAPODA" target="_blank" rel="noopener">
+                <div class="image-container">
+                <img class="image" loading="lazy" src="./steren.fr_files/capoda.webp" alt="CAPODA picture">
+                </div>
+                <div class="inner">
+                <h3 class="title">CAPODA</h3>
+                <p>Animated short movie.</p>
+                </div>
+            </a>
+            </steren-work>
+        </div>
+    </section>
+  </div>
+
+</body></html>
