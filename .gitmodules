@@ -1,3 +1,0 @@
-[submodule "webgl-path-tracing"]
-	path = webgl-path-tracing
-	url = https://github.com/steren/webgl-path-tracing.git

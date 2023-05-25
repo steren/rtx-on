@@ -25,5 +25,8 @@
   "module": "./rtx-on.js",
   "exports": {
     ".": "./rtx-on.js"
+  },
+  "dependencies": {
+    "webgl-path-tracing": "^1.0.0"
   }
 }
