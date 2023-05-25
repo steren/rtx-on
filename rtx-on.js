@@ -3,6 +3,8 @@ import {Vector} from './webgl-path-tracing/sylvester.src.js';
 
 // Height of the elements
 const zHeight = 0.1;
+// Time to make the effect appear.
+const opacityTransition = "1s";
 
 // TODO: adjust this based some hardware capabilities?
 const maxSize = 2048;
@@ -47,7 +49,9 @@ function extractRGBColor(element) {
 
 // Remove background color and box shadow from element
 function removeStyle(element) {
-	
+
+	element.style.transition = `box-shadow ${opacityTransition} ease-in-out, background-color ${opacityTransition} ease-in-out`; 
+
 	// store original box shadow in a data attribute
 	element.dataset.boxShadow = window.getComputedStyle(element).boxShadow;
 	element.style.boxShadow = 'none';
@@ -156,6 +160,8 @@ function initRTX({background, raised} = {}) {
 	backgroundCanvas.style.height = `${backgroundElement.clientHeight}px`;
 	backgroundCanvas.style.zIndex = '-1';
 	backgroundCanvas.style.overflow = 'hidden';
+	backgroundCanvas.style.opacity = 0;
+	backgroundCanvas.style.transition = `opacity ${opacityTransition} ease-in-out`; 
 	backgroundElement.appendChild(backgroundCanvas);
 
 	const config = {
@@ -165,6 +171,8 @@ function initRTX({background, raised} = {}) {
 	}
 
 	const ui = makePathTracer(backgroundCanvas, makeScene(backgroundElement, raisedElements), config, false);
+
+	backgroundCanvas.style.opacity = 1;
 
 	// listen for resize on the base element or any scene element
 	const resizeObserver = new ResizeObserver(() => {
@@ -189,7 +197,7 @@ function on(options) {
 		initRTX(options);
 	} else {
 		// unhide canvas
-		backgroundCanvas.style.display = 'block';
+		backgroundCanvas.style.opacity = 1;
 	}
 
 	// remove drop shadow and background color from elements, store them in data attributes
@@ -202,7 +210,7 @@ function on(options) {
  */
 function off() {
 	// hide canvas
-	backgroundCanvas.style.display = 'none';
+	backgroundCanvas.style.opacity = 0;
 
 	// restore original styles
 	[...raisedElements, backgroundElement].map(restoreStyle);
