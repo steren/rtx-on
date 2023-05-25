@@ -222,7 +222,7 @@ function off() {
  * Displays an "RTX OFF / ON" button on the page.
  * Mainly for fun.
  */
-function button() {
+function button(options) {
 	// Create the checkbox element
 	let rtxCheckbox = document.createElement('input');
 	rtxCheckbox.type = 'checkbox';
@@ -260,7 +260,7 @@ function button() {
 			if (this.checked) {
 					rtxLabel.style.backgroundColor = '#76b900';
 					rtxLabel.style.color = 'black';
-					on();
+					on(options);
 			} else {
 					rtxLabel.style.backgroundColor = 'black';
 					rtxLabel.style.color = 'white';
