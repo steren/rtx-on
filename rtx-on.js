@@ -116,6 +116,11 @@ function makeScene(background, elements) {
   return objects;
 }
 
+/**
+ * 
+ * @param {HTMLElement} options.background : element to apply the effect to, defaults to the entire body.
+ * @param {HTMLElement} options.raised[]: elevated elements, defaults to children of the background element if one is passed or to children of the body if none.
+ */
 function initRTX({background, raised} = {}) {
 	if(raised) {
 		raisedElements = raised;
@@ -189,11 +194,6 @@ function initRTX({background, raised} = {}) {
 	}
 }
 
-/**
- * 
- * @param {HTMLElement} options.background : element to apply the effect to, defaults to the entire body.
- * @param {HTMLElement} options.raised[]: elevated elements, defaults to children of the background element if one is passed or to children of the body if none.
- */
 function on(options) {
 	if(!backgroundCanvas) {
 		initRTX(options);
