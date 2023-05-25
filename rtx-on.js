@@ -6,6 +6,8 @@ const zHeight = 0.1;
 // Time to make the effect appear.
 const opacityTransition = "1s";
 
+const lightPosition = [0.8, 0.8, 0.8];
+
 // TODO: adjust this based some hardware capabilities?
 const maxSize = 2048;
 
@@ -167,7 +169,7 @@ function initRTX({background, raised} = {}) {
 	const config = {
 		zoom: 76,
 		fov: 1.5,
-		lightPosition: [0.8, 0.8, 0.8],
+		lightPosition,
 	}
 
 	const ui = makePathTracer(backgroundCanvas, makeScene(backgroundElement, raisedElements), config, false);
