@@ -122,6 +122,7 @@ function makeScene(background, elements) {
  * 
  * @param {HTMLElement} options.background : element to apply the effect to, defaults to the entire body.
  * @param {HTMLElement} options.raised[]: elevated elements, defaults to children of the background element if one is passed or to children of the body if none.
+ * @param {bool} options.disableIfDarkMode: if true, will not apply the effect if the user has dark mode enabled. Defaults to false.
  */
 function initRTX({background, raised} = {}) {
 	if(raised) {
@@ -199,15 +200,22 @@ function initRTX({background, raised} = {}) {
 }
 
 function on(options) {
-	if(!backgroundCanvas) {
-		initRTX(options);
-	} else {
-		// unhide canvas
-		backgroundCanvas.style.opacity = 1;
+	let skip = false;
+	if(options.disableIfDarkMode) {
+		skip = window.matchMedia('(prefers-color-scheme: dark)').matches;
 	}
 
-	// remove drop shadow and background color from elements, store them in data attributes
-	[...raisedElements, backgroundElement].map(removeStyle);
+	if(!skip) {
+		if(!backgroundCanvas) {
+			initRTX(options);
+		} else {
+			// unhide canvas
+			backgroundCanvas.style.opacity = 1;
+		}
+	
+		// remove drop shadow and background color from elements, store them in data attributes
+		[...raisedElements, backgroundElement].map(removeStyle);
+	}
 	
 }
 
