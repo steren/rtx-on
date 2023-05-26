@@ -11,8 +11,12 @@ const lightSize = 0.75;
 const lightVal = 0.6;
 
 // TODO: adjust this based some hardware capabilities?
+// navigator.deviceMemory
+// GPUSupportedLimits ?
 const maxSize = 2048;
 
+let initialized = false;
+let active = false;
 let backgroundElement;
 let backgroundCanvas;
 let raisedElements;
@@ -123,8 +127,14 @@ function makeScene(background, elements) {
  * @param {HTMLElement} options.background : element to apply the effect to, defaults to the entire body.
  * @param {HTMLElement} options.raised[]: elevated elements, defaults to children of the background element if one is passed or to children of the body if none.
  * @param {bool} options.disableIfDarkMode: if true, will not apply the effect if the user has dark mode enabled. Defaults to false.
+ * @param {bool} options.enableForAllAspectRatio: Set to `true` to force enable the effect on any aspect ratio. By default, the effect only applies if the page isn't too wide or high.
  */
-function initRTX({background, raised} = {}) {
+function initRTX({background, raised, disableIfDarkMode} = {}) {
+	if(disableIfDarkMode && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+		console.warn(`Not applying RTX, user has dark mode enabled.`);
+		return false;
+	}
+
 	if(raised) {
 		raisedElements = raised;
 	} else {
@@ -153,6 +163,12 @@ function initRTX({background, raised} = {}) {
 		}
 	} else {
 		backgroundElement = background;
+	}
+	
+	// if height is more than 2x width or width is more than 2x height, skip
+	if(backgroundElement.clientHeight > backgroundElement.clientWidth * 2 || backgroundElement.clientWidth > backgroundElement.clientHeight * 2) {
+		console.warn(`Not applying RTX, background element is too wide or too tall. height: ${backgroundElement.clientHeight}, width: ${backgroundElement.clientWidth}`);
+		return false;
 	}
 
 	// canvas must be square and of power of two
@@ -191,32 +207,30 @@ function initRTX({background, raised} = {}) {
 			ui.setObjects(makeScene(backgroundElement, raisedElements));
 			backgroundCanvas.style.width = `${backgroundElement.clientWidth}px`;
 			backgroundCanvas.style.height = `${backgroundElement.clientHeight}px`;
-			// TODO: if element changes size, we could create a bigger / smaller canvas.
+			// TODO: if element changes size, we could create a bigger / smaller canvas. But this requires re-building the path tracer.
 	});
 	resizeObserver.observe(backgroundElement);
 	for(let el of raisedElements) {
 		resizeObserver.observe(el);
 	}
+
+	initialized = true;
 }
 
 function on(options) {
-	let skip = false;
-	if(options.disableIfDarkMode) {
-		skip = window.matchMedia('(prefers-color-scheme: dark)').matches;
+	if(!initialized) {
+		initRTX(options);
+	} else {
+		// unhide canvas
+		backgroundCanvas.style.opacity = 1;
 	}
 
-	if(!skip) {
-		if(!backgroundCanvas) {
-			initRTX(options);
-		} else {
-			// unhide canvas
-			backgroundCanvas.style.opacity = 1;
-		}
-	
+	if(initialized) {
 		// remove drop shadow and background color from elements, store them in data attributes
 		[...raisedElements, backgroundElement].map(removeStyle);
 	}
-	
+
+	active = true;
 }
 
 /**
@@ -228,6 +242,8 @@ function off() {
 
 	// restore original styles
 	[...raisedElements, backgroundElement].map(restoreStyle);
+
+	axctive = false;
 }
 
 /**
