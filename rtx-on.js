@@ -214,6 +214,18 @@ function initRTX({background, raised, disableIfDarkMode} = {}) {
 		resizeObserver.observe(el);
 	}
 
+	// If the current device supports Compute Pressure API, use it to disable effect under 'critical' and 'serious' pressure
+	if ("PressureObserver" in window) {
+		const observer = new PressureObserver(records => {
+			const lastRecord = records.pop();
+			if (lastRecord.state === 'critical' || lastRecord.state === 'serious') {
+				console.log(`RTX automatically turned off due to ${lastRecord.state} pressure on the CPU.`);
+				off();
+			}
+		});
+		observer.observe('cpu');
+	}
+
 	initialized = true;
 }
 
@@ -243,7 +255,7 @@ function off() {
 	// restore original styles
 	[...raisedElements, backgroundElement].map(restoreStyle);
 
-	axctive = false;
+	active = false;
 }
 
 /**
