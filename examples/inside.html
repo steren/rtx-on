@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    body, html {
+      height: 100%;
+      display: grid;
+    }
+
+    main {
+      margin: auto;
+      width: 50%;
+      height: 50%;
+    }
+
+    .card {
+      box-shadow: 2px 3px 7px 2px rgba(0, 0, 0, 0.196);
+      margin: 4em;
+      padding: 2em;
+    }
+  </style>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "webgl-path-tracing": "../node_modules/webgl-path-tracing/webgl-path-tracing.js",
+        "sylvester": "../node_modules/webgl-path-tracing/sylvester.src.js",
+        "rtx-on": "../rtx-on.js"
+      }
+    }
+  </script>
+  <script type="module">
+    import * as rtx from 'rtx-on';
+
+    window.onload = function() {
+      rtx.on({
+        background: document.querySelector('main'),
+      });
+      rtx.button();
+    }
+  </script>
+</head>
+
+<body>
+
+  <main>
+    <div class="card">This example demonstrates using the effect on an element that isn't the default</div>
+  </main>
+
+</body>
+
+</html>
