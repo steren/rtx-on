@@ -155,16 +155,6 @@ function initRTX({background, raised, disableIfDarkMode} = {}) {
 		return false;
 	}
 
-	if(raised) {
-		raisedElements = raised;
-	} else {
-		if(background) {
-			raisedElements = getBoxShadowDescendants(backgroundElement);
-		} else {
-			raisedElements = getBoxShadowDescendants(document.body);
-		}
-	}
-
 	if(!background) {
 		// use <body> if bigger than viewport. Otherwise, use <html>, which is equal to viewport height
 		if(document.documentElement.clientHeight > document.body.clientHeight) {
@@ -184,7 +174,17 @@ function initRTX({background, raised, disableIfDarkMode} = {}) {
 	} else {
 		backgroundElement = background;
 	}
-	
+
+	if(raised) {
+		raisedElements = raised;
+	} else {
+		if(background) {
+			raisedElements = getBoxShadowDescendants(backgroundElement);
+		} else {
+			raisedElements = getBoxShadowDescendants(document.body);
+		}
+	}
+
 	// if height is more than 2x width or width is more than 2x height, skip
 	if(backgroundElement.clientHeight > backgroundElement.clientWidth * 2 || backgroundElement.clientWidth > backgroundElement.clientHeight * 2) {
 		console.warn(`Not applying RTX, background element is too wide or too tall. height: ${backgroundElement.clientHeight}, width: ${backgroundElement.clientWidth}`);
