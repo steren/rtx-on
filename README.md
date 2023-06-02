@@ -14,9 +14,9 @@ Install the module with `npm install rtx-on`
 <script type="importmap">
 {
     "imports": {
-        "webgl-path-tracing": "../node_modules/webgl-path-tracing/webgl-path-tracing.js",
-        "sylvester": "../node_modules/webgl-path-tracing/sylvester.src.js",
-        "rtx-on": "../rtx-on.js"
+        "webgl-path-tracing": "./node_modules/webgl-path-tracing/webgl-path-tracing.js",
+        "sylvester": "./node_modules/webgl-path-tracing/sylvester.src.js",
+        "rtx-on": "./node_modules/rtx-on/rtx-on.js"
     }
 }
 </script>
