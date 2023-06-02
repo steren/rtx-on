@@ -46,7 +46,11 @@ function closestPowerOfTwo(num) {
  */
 function extractRGBColor(element) {
 	const color = element.dataset.backgroundColor || window.getComputedStyle(element).backgroundColor;
-	if(color.startsWith('rgb')) {
+	if(color === 'rgba(0, 0, 0, 0)') {
+		// transparent, use white
+		return [1, 1, 1]; 
+	}
+	else if(color.startsWith('rgb')) {
 		const rgb = color.match(/(\d+)/g);
 		return [parseInt(rgb[0]) / 255, parseInt(rgb[1]) / 255, parseInt(rgb[2]) / 255];
 	} else {
