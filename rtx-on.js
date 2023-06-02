@@ -101,6 +101,8 @@ function makeScene(background, elements) {
 	// background element
 	objects.push(new Cube(Vector.create([-1, -1, zBase - 1 ]), Vector.create([1, 1, zBase]), nextObjectId++, Vector.create(extractRGBColor(background))));
 
+	const backgroundRect = background.getBoundingClientRect();
+
 	for (let el = 0; el < elements.length; el++) {
 		let rect = elements[el].getBoundingClientRect();
 		// ignore elements that have no height or width
@@ -108,15 +110,15 @@ function makeScene(background, elements) {
 
 		// TODO: should we also handle scroll position?
 		let minCorner = Vector.create([
-			2 * rect.left / (background.clientWidth) - 1,
-			-1 * (2 * (rect.top + rect.height) / (background.clientHeight) - 1),
+			2 * (rect.left - backgroundRect.left) / (background.clientWidth) - 1,
+			-1 * (2 * (rect.top + rect.height - backgroundRect.top) / (background.clientHeight) - 1),
 
 			zBase,
 		]);
 
 		let maxCorner = Vector.create([
-			2 * (rect.left + rect.width) / (background.clientWidth) - 1,
-			-1 * (2 * rect.top / (background.clientHeight) - 1),
+			2 * (rect.left + rect.width - backgroundRect.left) / (background.clientWidth) - 1,
+			-1 * (2 * (rect.top - backgroundRect.top) / (background.clientHeight) - 1),
 			zHeight + zBase,
 		]);
 
@@ -194,6 +196,9 @@ function initRTX({background, raised, disableIfDarkMode} = {}) {
 	// canvas must be square and of power of two
 	// use the element largest width / height and round it up to the next power of two
 	let size = Math.min(closestPowerOfTwo(Math.max(backgroundElement.clientWidth, backgroundElement.clientHeight)), maxSize);
+
+	// set position to relative in order to attach the canvas with position absolute
+	backgroundElement.style.position = 'relative';
 
 	backgroundCanvas = document.createElement('canvas');
 	backgroundCanvas.inert = true;
