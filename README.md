@@ -39,7 +39,7 @@ Turn on the ray traced shadow effect on the provided background elements for the
 Removes any existing box shadow effect.
 
  * `background` element to apply the effect to, defaults to the entire body.
- * `raised[]` elevated elements, defaults to children of the background element if one is passed or to children of the body if none.
+ * `raised[]` elevated elements, defaults to children of the background element with a box shadow style
  * `disableIfDarkMode`: if `true`, will not apply the effect if the user has dark mode enabled. Defaults to `false`.
  * `enableForAllAspectRatio`: At the moment, the effect only applies if the page isn't too wide or high. Set to `true` to force enable the effect on any aspect ratio.
 

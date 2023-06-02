@@ -123,9 +123,25 @@ function makeScene(background, elements) {
 }
 
 /**
+ * Return all elements that have a box shadow and are descendants of the passed element
+ * @param {HTMLElement} element
+ * @returns {HTMLElement[]} all elements with box shadow
+ */
+function getBoxShadowDescendants(element) {
+	const elements = element.querySelectorAll('*');
+	let result = [];
+	for (const el of elements) {
+		if(window.getComputedStyle(el).boxShadow !== 'none') {
+			result.push(el);
+		}
+	}
+	return result;
+}
+
+/**
  * 
  * @param {HTMLElement} options.background : element to apply the effect to, defaults to the entire body.
- * @param {HTMLElement} options.raised[]: elevated elements, defaults to children of the background element if one is passed or to children of the body if none.
+ * @param {HTMLElement} options.raised[]: elevated elements, defaults to descendants of the background element with box shadow.
  * @param {bool} options.disableIfDarkMode: if true, will not apply the effect if the user has dark mode enabled. Defaults to false.
  * @param {bool} options.enableForAllAspectRatio: Set to `true` to force enable the effect on any aspect ratio. By default, the effect only applies if the page isn't too wide or high.
  */
@@ -139,9 +155,9 @@ function initRTX({background, raised, disableIfDarkMode} = {}) {
 		raisedElements = raised;
 	} else {
 		if(background) {
-			raisedElements = backgroundElement.children;
+			raisedElements = getBoxShadowDescendants(backgroundElement);
 		} else {
-			raisedElements = document.body.children;
+			raisedElements = getBoxShadowDescendants(document.body);
 		}
 	}
 
