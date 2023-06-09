@@ -144,6 +144,35 @@ function getBoxShadowDescendants(element) {
 	return result;
 }
 
+function styleCanvas(backgroundCanvas, backgroundElement, startDisplayed) {
+	let backgroundElementRect = backgroundElement.getBoundingClientRect();
+
+	// canvas must be square and of power of two
+	// use the element largest width / height and round it up to the next power of two
+	let size = Math.min(closestPowerOfTwo(Math.max(backgroundElementRect.width, backgroundElementRect.height)), maxSize);
+
+	backgroundCanvas.inert = true;
+	backgroundCanvas.width = size;
+	backgroundCanvas.height = size;
+	backgroundCanvas.style.position = 'absolute';
+
+	// offset the position of the canvas by the border width
+	// See examples/inside.html to understand why this is needed
+	const borderTopWidth = window.getComputedStyle(backgroundElement).borderTopWidth;
+	const borderLeftWidth = window.getComputedStyle(backgroundElement).borderLeftWidth;
+	backgroundCanvas.style.top = `-${borderTopWidth}`;
+	backgroundCanvas.style.left = `-${borderLeftWidth}`;
+
+	backgroundCanvas.style.width = `${backgroundElementRect.width}px`;
+	backgroundCanvas.style.height = `${backgroundElementRect.height}px`;
+	backgroundCanvas.style.zIndex = '-1';
+	backgroundCanvas.style.overflow = 'hidden';
+	if(!startDisplayed) {
+		backgroundCanvas.style.opacity = 0;
+		backgroundCanvas.style.transition = `opacity ${opacityTransition} ease-in-out`; 
+	}
+}
+
 /**
  * 
  * @param {HTMLElement} options.background : element to apply the effect to, defaults to the entire body.
@@ -183,32 +212,11 @@ function initRTX({background, raised, disableIfDarkMode} = {}) {
 		return false;
 	}
 
-	// canvas must be square and of power of two
-	// use the element largest width / height and round it up to the next power of two
-	let size = Math.min(closestPowerOfTwo(Math.max(backgroundElementRect.width, backgroundElementRect.height)), maxSize);
-
 	// set position to relative in order to attach the canvas with position absolute
 	backgroundElement.style.position = 'relative';
 
 	backgroundCanvas = document.createElement('canvas');
-	backgroundCanvas.inert = true;
-	backgroundCanvas.width = size;
-	backgroundCanvas.height = size;
-	backgroundCanvas.style.position = 'absolute';
-
-	// offset the position of the canvas by the border width
-	// See examples/inside.html to understand why this is needed
-	const borderTopWidth = window.getComputedStyle(backgroundElement).borderTopWidth;
-	const borderLeftWidth = window.getComputedStyle(backgroundElement).borderLeftWidth;
-	backgroundCanvas.style.top = `-${borderTopWidth}`;
-	backgroundCanvas.style.left = `-${borderLeftWidth}`;
-
-	backgroundCanvas.style.width = `${backgroundElementRect.width}px`;
-	backgroundCanvas.style.height = `${backgroundElementRect.height}px`;
-	backgroundCanvas.style.zIndex = '-1';
-	backgroundCanvas.style.overflow = 'hidden';
-	backgroundCanvas.style.opacity = 0;
-	backgroundCanvas.style.transition = `opacity ${opacityTransition} ease-in-out`; 
+	styleCanvas(backgroundCanvas, backgroundElement);
 	backgroundElement.appendChild(backgroundCanvas);
 
 	const config = {
@@ -226,9 +234,7 @@ function initRTX({background, raised, disableIfDarkMode} = {}) {
 	// listen for resize on the base element or any scene element
 	const resizeObserver = new ResizeObserver(() => {
 			ui.setObjects(makeScene(backgroundElement, raisedElements));
-			backgroundCanvas.style.width = `${backgroundElementRect.width}px`;
-			backgroundCanvas.style.height = `${backgroundElementRect.height}px`;
-			// TODO: if element changes size, we could create a bigger / smaller canvas. But this requires re-building the path tracer.
+			styleCanvas(backgroundCanvas, backgroundElement, true);
 	});
 	resizeObserver.observe(backgroundElement);
 	for(let el of raisedElements) {
@@ -250,6 +256,7 @@ function initRTX({background, raised, disableIfDarkMode} = {}) {
 	initialized = true;
 }
 
+
 function on(options) {
 	if(!initialized) {
 		initRTX(options);
@@ -265,6 +272,7 @@ function on(options) {
 
 	active = true;
 }
+
 
 /**
  * Restore 
