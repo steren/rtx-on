@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <title>rtx-on.js</title>
+  <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <style>
+    :root {
+      --primary-dark: #76b900;
+    }
+
+    html {
+      background-color: rgb(230, 230, 230);
+    }
+
+    body {
+      max-width: 70ch;
+      padding: 3em 1em;
+      margin: auto;
+      line-height: 1.75;
+      font-size: 1.25em;
+      font-family: sans-serif;
+    }
+
+    h1,h2,h3,h4,h5,h6 {
+      margin: 3em 0 1em;
+    }
+
+    p,ul,ol {
+      margin-bottom: 2em;
+    }
+
+    pre {
+      overflow-x:auto;
+      font-size:0.8em;
+    }
+
+    header {
+      color: white;
+      background: var(--primary-dark);
+    }
+
+    section {
+      background-color: white;
+    }
+
+    header, section {
+      box-shadow: rgb(0 0 0 / 40%) -12px 12px 12px 0px;
+    }
+
+  </style>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "webgl-path-tracing": "https://webgl-path-tracing.steren.fr/webgl-path-tracing.js",
+        "sylvester": "https://webgl-path-tracing.steren.fr/sylvester.src.js",
+        "rtx-on": "../rtx-on.js"
+      }
+    }
+  </script>
+  <script type="module">
+    import * as rtx from 'rtx-on';
+
+    window.onload = function() {
+      rtx.on();
+      rtx.button();
+    }
+  </script>
+</head>
+
+<body>
+
+  <header>
+    <h1><code>rtx-on.js</code></h1>
+    <p>Drop the box shadow, your web pages deserve proper ray tracing.</p>
+    <p><code>rtx-on.js</code> is a JavaScript library that enhances your web page by simulating in real time realistic lights and shadows using ray tracing.</p>
+  </header>
+
+  <main>
+    <section>
+      <h2>Try it</h2>
+
+      <ul>
+        <li>Toggle the "RTX ON" button at the bottom of this page for a before/after.</li>
+        <li>Resize any of the card, or your window browser window, see how it's all real time.</li>
+        <li>Click the header to change its color, and see how it affects light.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Use it</h2>
+
+      <p>Add to your webpage:
+        <pre><code>
+&lt;script type="importmap">
+{
+  "imports": {
+    "webgl-path-tracing": "https://webgl-path-tracing.steren.fr/webgl-path-tracing.js",
+    "sylvester": "https://webgl-path-tracing.steren.fr/sylvester.src.js",
+    "rtx-on": "https://rtx-on.steren.fr/rtx-on.js"
+  }
+}
+&lt;/script>
+
+&lt;script type="module">
+import * as rtx from 'rtx-on';
+window.onload = function() {
+  rtx.on();
+}
+&lt;/script></code></pre>
+    </p>
+
+    <p>or install using npm:</p>
+    <pre><code>npm install rtx-on</code></pre>
+    </section>
+  </main>
+</body>
+
+</html>
