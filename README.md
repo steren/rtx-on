@@ -4,20 +4,18 @@ Use proper ray traced shadow instead of the boring box-shadow on your web pages.
 
 ![Example of this library on example.com](screenshot.jpg)
 
-## Using the module
+## Quickstart
 
-Install the module with `npm install rtx-on`
-
-### Quickstart
+Simply add to your web page:
 
 ```html
 <script type="importmap">
 {
-    "imports": {
-        "webgl-path-tracing": "./node_modules/webgl-path-tracing/webgl-path-tracing.js",
-        "sylvester": "./node_modules/webgl-path-tracing/sylvester.src.js",
-        "rtx-on": "./node_modules/rtx-on/rtx-on.js"
-    }
+  "imports": {
+    "webgl-path-tracing": "https://webgl-path-tracing.steren.fr/webgl-path-tracing.js",
+    "sylvester": "https://webgl-path-tracing.steren.fr/sylvester.src.js",
+    "rtx-on": "https://rtx-on.steren.fr/rtx-on.js"
+  }
 }
 </script>
 <script type="module">
@@ -31,7 +29,11 @@ window.onload = function() {
 
 See the [examples folder](./examples/) for more examples.
 
-### API reference
+## Local installation
+
+Install the module with `npm install rtx-on`
+
+## API reference
 
 #### `rtx.on({background, raised})`
 
