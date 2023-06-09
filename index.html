@@ -22,10 +22,6 @@
       font-family: sans-serif;
     }
 
-    h1,h2,h3,h4,h5,h6 {
-      margin: 3em 0 1em;
-    }
-
     p,ul,ol {
       margin-bottom: 2em;
     }
@@ -46,6 +42,10 @@
 
     header, section {
       box-shadow: rgb(0 0 0 / 40%) -12px 12px 12px 0px;
+      padding: 1em;
+      margin-bottom: 3em;
+      resize: both;
+      overflow: hidden;
     }
 
   </style>
@@ -84,7 +84,7 @@
       <ul>
         <li>Toggle the "RTX ON" button at the bottom of this page for a before/after.</li>
         <li>Resize any of the card, or your window browser window, see how it's all real time.</li>
-        <li>Click the header to change its color, and see how it affects light.</li>
+        <!-- <li>Click the header to change its color, and see how it affects light.</li> -->
       </ul>
     </section>
 
@@ -115,6 +115,24 @@ window.onload = function() {
     <pre><code>npm install rtx-on</code></pre>
     </section>
   </main>
+
+  <!-- <script>
+    // random color when clicking header
+    const element = document.querySelector("header");
+  
+    function randomColor() {
+      var r = Math.floor(Math.random() * 256);
+      var g = Math.floor(Math.random() * 256);
+      var b = Math.floor(Math.random() * 256);
+      return "rgb(" + r + "," + g + "," + b + ")";
+    }
+  
+    element.addEventListener("click", function() {
+      this.style.backgroundColor = randomColor();
+    });
+  
+  </script> -->
+
 </body>
 
 </html>
