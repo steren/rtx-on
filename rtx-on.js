@@ -110,15 +110,15 @@ function makeScene(background, elements) {
 
 		// TODO: should we also handle scroll position?
 		let minCorner = Vector.create([
-			2 * (rect.left - backgroundRect.left) / (background.clientWidth) - 1,
-			-1 * (2 * (rect.top + rect.height - backgroundRect.top) / (background.clientHeight) - 1),
+			2 * (rect.left - backgroundRect.left) / (backgroundRect.width) - 1,
+			-1 * (2 * (rect.top + rect.height - backgroundRect.top) / (backgroundRect.height) - 1),
 
 			zBase,
 		]);
 
 		let maxCorner = Vector.create([
-			2 * (rect.left + rect.width - backgroundRect.left) / (background.clientWidth) - 1,
-			-1 * (2 * (rect.top - backgroundRect.top) / (background.clientHeight) - 1),
+			2 * (rect.left + rect.width - backgroundRect.left) / (backgroundRect.width) - 1,
+			-1 * (2 * (rect.top - backgroundRect.top) / (backgroundRect.height) - 1),
 			zHeight + zBase,
 		]);
 
@@ -158,20 +158,13 @@ function initRTX({background, raised, disableIfDarkMode} = {}) {
 	}
 
 	if(!background) {
-		// use <body> if bigger than viewport. Otherwise, use <html>, which is equal to viewport height
-		if(document.documentElement.clientHeight > document.body.clientHeight) {
-			backgroundElement = document.documentElement;
-			// if body has a background color, set it on body too
-			if(window.getComputedStyle(document.body).backgroundColor !== 'rgba(0, 0, 0, 0)') {
-				backgroundElement.style.backgroundColor = window.getComputedStyle(document.body).backgroundColor;
-			}
-
-		} else {
-			backgroundElement = document.body;
-			// if html has a background color, set it on body too
-			if(window.getComputedStyle(document.documentElement).backgroundColor !== 'rgba(0, 0, 0, 0)') {
-				backgroundElement.style.backgroundColor = window.getComputedStyle(document.documentElement).backgroundColor;
-			}
+		// select the <html> element.
+		backgroundElement = document.documentElement;
+		// The <html> element might be smaller than the viewport. So we make sure it is at least as big as the viewport.
+		backgroundElement.style.minHeight = '100vh';
+		// if <body> has a background color, set it on <html> too
+		if(window.getComputedStyle(document.body).backgroundColor !== 'rgba(0, 0, 0, 0)') {
+			backgroundElement.style.backgroundColor = window.getComputedStyle(document.body).backgroundColor;
 		}
 	} else {
 		backgroundElement = background;
@@ -180,22 +173,19 @@ function initRTX({background, raised, disableIfDarkMode} = {}) {
 	if(raised) {
 		raisedElements = raised;
 	} else {
-		if(background) {
-			raisedElements = getBoxShadowDescendants(backgroundElement);
-		} else {
-			raisedElements = getBoxShadowDescendants(document.body);
-		}
+		raisedElements = getBoxShadowDescendants(backgroundElement);
 	}
 
 	// if height is more than 2x width or width is more than 2x height, skip
-	if(backgroundElement.clientHeight > backgroundElement.clientWidth * 2 || backgroundElement.clientWidth > backgroundElement.clientHeight * 2) {
-		console.warn(`Not applying RTX, background element is too wide or too tall. height: ${backgroundElement.clientHeight}, width: ${backgroundElement.clientWidth}`);
+	let backgroundElementRect = backgroundElement.getBoundingClientRect();
+	if(backgroundElementRect.height > backgroundElementRect.width * 3 || backgroundElementRect.width > backgroundElementRect.height * 3) {
+		console.warn(`Not applying RTX, background element is too wide or too tall. height: ${backgroundElementRect.height}, width: ${backgroundElementRect.width}`);
 		return false;
 	}
 
 	// canvas must be square and of power of two
 	// use the element largest width / height and round it up to the next power of two
-	let size = Math.min(closestPowerOfTwo(Math.max(backgroundElement.clientWidth, backgroundElement.clientHeight)), maxSize);
+	let size = Math.min(closestPowerOfTwo(Math.max(backgroundElementRect.width, backgroundElementRect.height)), maxSize);
 
 	// set position to relative in order to attach the canvas with position absolute
 	backgroundElement.style.position = 'relative';
@@ -205,10 +195,16 @@ function initRTX({background, raised, disableIfDarkMode} = {}) {
 	backgroundCanvas.width = size;
 	backgroundCanvas.height = size;
 	backgroundCanvas.style.position = 'absolute';
-	backgroundCanvas.style.top = '0';
-	backgroundCanvas.style.left = '0';
-	backgroundCanvas.style.width = `${backgroundElement.clientWidth}px`;
-	backgroundCanvas.style.height = `${backgroundElement.clientHeight}px`;
+
+	// offset the position of the canvas by the border width
+	// See examples/inside.html to understand why this is needed
+	const borderTopWidth = window.getComputedStyle(backgroundElement).borderTopWidth;
+	const borderLeftWidth = window.getComputedStyle(backgroundElement).borderLeftWidth;
+	backgroundCanvas.style.top = `-${borderTopWidth}`;
+	backgroundCanvas.style.left = `-${borderLeftWidth}`;
+
+	backgroundCanvas.style.width = `${backgroundElementRect.width}px`;
+	backgroundCanvas.style.height = `${backgroundElementRect.height}px`;
 	backgroundCanvas.style.zIndex = '-1';
 	backgroundCanvas.style.overflow = 'hidden';
 	backgroundCanvas.style.opacity = 0;
@@ -230,8 +226,8 @@ function initRTX({background, raised, disableIfDarkMode} = {}) {
 	// listen for resize on the base element or any scene element
 	const resizeObserver = new ResizeObserver(() => {
 			ui.setObjects(makeScene(backgroundElement, raisedElements));
-			backgroundCanvas.style.width = `${backgroundElement.clientWidth}px`;
-			backgroundCanvas.style.height = `${backgroundElement.clientHeight}px`;
+			backgroundCanvas.style.width = `${backgroundElementRect.width}px`;
+			backgroundCanvas.style.height = `${backgroundElementRect.height}px`;
 			// TODO: if element changes size, we could create a bigger / smaller canvas. But this requires re-building the path tracer.
 	});
 	resizeObserver.observe(backgroundElement);
