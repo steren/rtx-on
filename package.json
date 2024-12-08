@@ -27,6 +27,6 @@
     ".": "./rtx-on.js"
   },
   "dependencies": {
-    "webgl-path-tracing": "^1.8.0"
+    "webgl-path-tracing": "^1.9.0"
   }
 }
