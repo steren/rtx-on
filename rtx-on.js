@@ -185,16 +185,17 @@ function styleCanvas(backgroundCanvas, backgroundElement, startDisplayed) {
  * 
  * @param {HTMLElement} options.background : element to apply the effect to, defaults to the entire body.
  * @param {HTMLElement} options.raised[]: elevated elements, defaults to descendants of the background element with box shadow.
- * @param {bool} options.disableIfDarkMode: if true, will not apply the effect if the user has dark mode enabled. Defaults to false.
+ * @param {bool} options.disableIfDarkMode: if true, will not apply the effect if the user has dark mode enabled, which dims the light of rtx-on. Defaults to false.
+ * @param {bool} options.forceLightMode: if true, the effect will always apply at light mode. Defaults to false. Set to true if your website doesn't implement dark mode.
  * @param {bool} options.enableForAllAspectRatio: Set to `true` to force enable the effect on any aspect ratio. By default, the effect only applies if the page isn't too wide or high.
  */
-function initRTX({background, raised, disableIfDarkMode} = {}) {
+function initRTX({background, raised, disableIfDarkMode, forceLightMode} = {}) {
 	// Check dark mode
 	if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
 		if(disableIfDarkMode) {
 			console.warn(`Not applying RTX, user has dark mode enabled.`);
 			return false;
-		} else {
+		} else if(!forceLightMode){
 			lightVal = lightValDarkMode;
 		}
 	}
