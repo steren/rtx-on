@@ -10,7 +10,9 @@ const pauseAfter = 10 * 1000;
 
 const lightPosition = [0.75, 0.75, 1.5];
 const lightSize = 0.75;
-const lightVal = 0.6;
+const lightValLightMode = 0.6;
+const lightValDarkMode = 0.1;
+let lightVal = lightValLightMode;
 
 // TODO: adjust this based some hardware capabilities?
 // navigator.deviceMemory
@@ -101,8 +103,11 @@ function makeScene(background, elements) {
   var objects = [];
   let nextObjectId = 0;
 
-	// background element
-	objects.push(new Cube(Vector.create([-1, -1, zBase - 1 ]), Vector.create([1, 1, zBase]), nextObjectId++, Vector.create(extractRGBColor(background))));
+	// background element.
+	// for now, always make it white, for a better effect
+	// TODO: Retain the hue
+	let backgroundColor = [1,1,1];
+	objects.push(new Cube(Vector.create([-1, -1, zBase - 1 ]), Vector.create([1, 1, zBase]), nextObjectId++, Vector.create(backgroundColor)));
 
 	const backgroundRect = background.getBoundingClientRect();
 
@@ -184,9 +189,14 @@ function styleCanvas(backgroundCanvas, backgroundElement, startDisplayed) {
  * @param {bool} options.enableForAllAspectRatio: Set to `true` to force enable the effect on any aspect ratio. By default, the effect only applies if the page isn't too wide or high.
  */
 function initRTX({background, raised, disableIfDarkMode} = {}) {
-	if(disableIfDarkMode && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-		console.warn(`Not applying RTX, user has dark mode enabled.`);
-		return false;
+	// Check dark mode
+	if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+		if(disableIfDarkMode) {
+			console.warn(`Not applying RTX, user has dark mode enabled.`);
+			return false;
+		} else {
+			lightVal = lightValDarkMode;
+		}
 	}
 
 	if(!background) {
