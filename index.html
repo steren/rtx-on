@@ -74,7 +74,9 @@
     import * as rtx from 'rtx-on';
 
     window.onload = function() {
-      rtx.on();
+      rtx.on({
+        moveLightOnClick: true,
+      });
       rtx.button();
     }
   </script>
@@ -95,7 +97,8 @@
 
       <ul>
         <li>Toggle the "RTX ON" button at the bottom of this page for a before/after.</li>
-        <li>Resize any of the card, or your window browser window, see how it's all real time.</li>
+        <li>Resize any of the card on this page or your window browser window, to see the effect is computed in real time.</li>
+        <li>Click anywhere on the background of this page to change the light position.</li>
         <!-- <li>Click the header to change its color, and see how it affects light.</li> -->
       </ul>
     </section>
