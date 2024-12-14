@@ -99,7 +99,6 @@
 </head>
 
 <body>
-
   <p id="github"><a href="https://github.com/steren/rtx-on">GitHub</a></p>
 
   <header>
@@ -109,12 +108,10 @@
   </header>
 
   <main>
-
     <div class="cube" style="background-color: red;"></div>
 
     <section>
       <h2>Try it</h2>
-
       <ul>
         <li>Toggle the "RTX ON" button at the bottom of this page to disable/enable the effect.</li>
         <li>Resize your browser window.</li>
@@ -122,7 +119,6 @@
         <li>Switch to light / dark mode.</li>
         <li>Open DevTools and inspect this page.</li>
         <li>Check it on <a href="/examples/example.com">example.com</a> or <a href="/examples/steren.fr.html">steren.fr</a>.</li>
-        <!-- <li>Click the header to change its color, and see how it affects light.</li> -->
       </ul>
     </section>
 
@@ -130,7 +126,6 @@
 
     <section>
       <h2>Use it</h2>
-
       <p>Add to your webpage:
         <pre><code>
 &lt;script type="importmap">
@@ -150,7 +145,6 @@ window.onload = function() {
 }
 &lt;/script></code></pre>
     </p>
-
     <p>or install using npm:</p>
     <pre><code>npm install rtx-on</code></pre>
     </section>
@@ -158,41 +152,21 @@ window.onload = function() {
     <div class="cube" style="background-color: yellow;"></div>
 
     <section>
-      <h2>How to use</h2>
-
-      <p>By default, elements with box shadows are considered raised. You can customize the background element and the list of raised elements.</p>
-      <p>See the <a href="https://github.com/steren/rtx-on?tab=readme-ov-file#api-reference">GitHub README</a> for all options</p>
+      <h2>Customize it</h2>
+      <p>By default, elements with box shadows are considered raised. You can customize the background element and the list of raised elements. You can also decide to allow the user to change the light position on click.</p>
+      <p>See the <a href="https://github.com/steren/rtx-on?tab=readme-ov-file#api-reference">GitHub README</a> for all configuration options</p>
     </section>
 
     <div class="cube" style="background-color: fuchsia;"></div>
 
     <section>
       <h2>Credits</h2>
-
-      <p>Made by <a href="https://steren.fr">Steren</a> using <a href="https://webgl-path-tracing.steren.fr/">webgl-path-tracing</a>, a WebGL path tracing library developed in 2010 by <a href="https://madebyevan.com/">Evan Wallace</a>.</p>
-      
+      <p>Made by <a href="https://steren.fr">Steren</a> using <a href="https://webgl-path-tracing.steren.fr/">webgl-path-tracing</a>, a WebGL path tracing library developed in 2010 by <a href="https://madebyevan.com/">Evan Wallace</a>.</p>     
     </section>
 
     <div class="cube" style="background-color: aqua;"></div>
 
   </main>
-
-  <!-- <script>
-    // random color when clicking header
-    const element = document.querySelector("header");
-  
-    function randomColor() {
-      var r = Math.floor(Math.random() * 256);
-      var g = Math.floor(Math.random() * 256);
-      var b = Math.floor(Math.random() * 256);
-      return "rgb(" + r + "," + g + "," + b + ")";
-    }
-  
-    element.addEventListener("click", function() {
-      this.style.backgroundColor = randomColor();
-    });
-  
-  </script> -->
 
 </body>
 
