@@ -7,6 +7,7 @@
   <style>
     :root {
       --primary-dark: #76b900;
+      --main-size: 3em;
     }
 
     html {
@@ -28,10 +29,6 @@
       font-family: sans-serif;
     }
 
-    p,ul,ol {
-      margin-bottom: 2em;
-    }
-
     pre {
       overflow-x:auto;
       font-size:0.8em;
@@ -51,12 +48,33 @@
       }
     }
 
-    header, section {
+    header, section, .cube {
       box-shadow: rgb(0 0 0 / 40%) -12px 12px 12px 0px;
+    }
+
+    header, section {
       padding: 1em;
-      margin-bottom: 3em;
+      margin-bottom: var(--main-size);
+
+    }
+
+    .cube {
+      width: var(--main-size);
+      height: var(--main-size);
+      margin: calc(var(--main-size) / 2) auto;
+      display: block;
       resize: both;
       overflow: hidden;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    #github {
+      position: absolute;
+      top: 1em;
+      right: var(--main-size);
     }
 
   </style>
@@ -74,9 +92,7 @@
     import * as rtx from 'rtx-on';
 
     window.onload = function() {
-      rtx.on({
-        moveLightOnClick: true,
-      });
+      rtx.on();
       rtx.button();
     }
   </script>
@@ -84,24 +100,33 @@
 
 <body>
 
+  <p id="github"><a href="https://github.com/steren/rtx-on">GitHub</a></p>
+
   <header>
     <h1><code>rtx-on.js</code></h1>
     <p>Drop the box shadow, your web pages deserve proper ray tracing.</p>
     <p><code>rtx-on.js</code> is an experimental JavaScript library that enhances web pages by simulating in real time realistic lights and shadows using ray tracing.</p>
-    <p><a href="https://github.com/steren/rtx-on">GitHub</a></p>
   </header>
 
   <main>
+
+    <div class="cube" style="background-color: red;"></div>
+
     <section>
       <h2>Try it</h2>
 
       <ul>
-        <li>Toggle the "RTX ON" button at the bottom of this page for a before/after.</li>
-        <li>Resize any of the card on this page or your window browser window, to see the effect is computed in real time.</li>
-        <li>Click anywhere on the background of this page to change the light position.</li>
+        <li>Toggle the "RTX ON" button at the bottom of this page to disable/enable the effect.</li>
+        <li>Resize your browser window.</li>
+        <li>Resize any of the cubes.</li>
+        <li>Switch to light / dark mode.</li>
+        <li>Open DevTools and inspect this page.</li>
+        <li>Check it on <a href="/examples/example.com">example.com</a> or <a href="/examples/steren.fr.html">steren.fr</a>.</li>
         <!-- <li>Click the header to change its color, and see how it affects light.</li> -->
       </ul>
     </section>
+
+    <div class="cube" style="background-color: blue;"></div>
 
     <section>
       <h2>Use it</h2>
@@ -129,6 +154,27 @@ window.onload = function() {
     <p>or install using npm:</p>
     <pre><code>npm install rtx-on</code></pre>
     </section>
+
+    <div class="cube" style="background-color: yellow;"></div>
+
+    <section>
+      <h2>How to use</h2>
+
+      <p>By default, elements with box shadows are considered raised. You can customize the background element and the list of raised elements.</p>
+      <p>See the <a href="https://github.com/steren/rtx-on?tab=readme-ov-file#api-reference">GitHub README</a> for all options</p>
+    </section>
+
+    <div class="cube" style="background-color: fuchsia;"></div>
+
+    <section>
+      <h2>Credits</h2>
+
+      <p>Made by <a href="https://steren.fr">Steren</a> using <a href="https://webgl-path-tracing.steren.fr/">webgl-path-tracing</a>, a WebGL path tracing library developed in 2010 by <a href="https://madebyevan.com/">Evan Wallace</a>.</p>
+      
+    </section>
+
+    <div class="cube" style="background-color: aqua;"></div>
+
   </main>
 
   <!-- <script>
