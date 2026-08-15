@@ -17,3 +17,20 @@ Then create a GitHub release for the tag you just pushed, either from the
 Creating the release is what triggers the
 [GitHub Action](https://github.com/steren/rtx-on/blob/main/.github/workflows/npm-publish.yml)
 that publishes to npm. Pushing the tag on its own does not publish anything.
+
+### Authentication
+
+The workflow authenticates to npm with
+[trusted publishing](https://docs.npmjs.com/trusted-publishers) (OIDC), so there
+is no npm token stored in this repository and nothing to rotate. The trust
+relationship is configured once on npmjs.com, under the package's
+*Settings -> Trusted publisher*:
+
+* Publisher: GitHub Actions
+* Organization or user: `steren`
+* Repository: `rtx-on`
+* Workflow filename: `npm-publish.yml`
+* Environment: (leave empty)
+
+As a side effect, published versions also carry
+[provenance attestations](https://docs.npmjs.com/generating-provenance-statements).
