@@ -9,4 +9,11 @@ Run the following:
 * `npm version minor`
 * `git push --follow-tags`
 
-Then a [GitHub Action](https://github.com/steren/rtx-on/blob/main/.github/workflows/npm-publish.yml) automatically publishes to npm.
+Then create a GitHub release for the tag you just pushed, either from the
+[releases page](https://github.com/steren/rtx-on/releases/new) or with:
+
+* `gh release create "v$(node -p "require('./package.json').version")" --generate-notes`
+
+Creating the release is what triggers the
+[GitHub Action](https://github.com/steren/rtx-on/blob/main/.github/workflows/npm-publish.yml)
+that publishes to npm. Pushing the tag on its own does not publish anything.
