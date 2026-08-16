@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-  <title>rtx-on.js</title>
-  <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<head>
+  <meta charset="utf-8">
   <meta name="viewport" content="width=800, initial-scale=0.5">
+  <title>rtx-on.js</title>
 
   <style>
     :root {
@@ -84,17 +85,17 @@
       "imports": {
         "webgl-path-tracing": "https://webgl-path-tracing.steren.fr/webgl-path-tracing.js",
         "sylvester": "https://webgl-path-tracing.steren.fr/sylvester.src.js",
-        "rtx-on": "../rtx-on.js"
+        "rtx-on": "./rtx-on.js"
       }
     }
   </script>
   <script type="module">
     import * as rtx from 'rtx-on';
 
-    window.onload = function() {
+    window.addEventListener('load', () => {
       rtx.on();
       rtx.button();
-    }
+    });
   </script>
 </head>
 
@@ -118,7 +119,7 @@
         <li>Resize any of the cubes.</li>
         <li>Switch to light / dark mode.</li>
         <li>Open DevTools and inspect this page.</li>
-        <li>Check it on <a href="/examples/example.com">example.com</a> or <a href="/examples/steren.fr.html">steren.fr</a>.</li>
+        <li>Check it on <a href="/examples/example.com.html">example.com</a> or <a href="/examples/inside.html">a single element</a>.</li>
       </ul>
     </section>
 

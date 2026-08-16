@@ -1,6 +1,9 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<html lang="en">
+<head>
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>rtx-on.js on a single element</title>
 
   <style>
     body, html {
@@ -34,13 +37,13 @@
   <script type="module">
     import * as rtx from 'rtx-on';
 
-    window.onload = function() {
+    window.addEventListener('load', () => {
       rtx.on({
         background: document.querySelector('main'),
         forceLightMode: true,
       });
       rtx.button();
-    }
+    });
   </script>
 </head>
 
