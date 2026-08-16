@@ -9,9 +9,6 @@ const zBase = 0;
 const opacityTransition = '0.5s';
 // Pause the renderer after this period of inactivity (in ms).
 const pauseAfter = 10 * 1000;
-// Wait for this long after the last resize before rebuilding the scene (in ms):
-// resizes come in bursts, and each one restarts the path tracer.
-const resizeDebounce = 100;
 
 // Camera. The field of view and this zoom, the distance of the camera to the scene, are
 // picked so that a square canvas frames exactly [-1, 1] on both axes.
@@ -48,7 +45,6 @@ let ui;
 let lightVal;
 let lightPosition = [...defaultLightPosition];
 let pauseTimer;
-let resizeTimer;
 
 /**
  * Size of the canvas drawing buffer for a background element of the given size.
@@ -320,8 +316,12 @@ function restartPathTracer() {
     ui.renderer.pause();
   }
 
-  releaseContext(previousCanvas);
-  previousCanvas.remove();
+  // drop the canvas being replaced only once the new one has had a frame to render into,
+  // so that the swap never shows an empty canvas
+  window.requestAnimationFrame(() => {
+    releaseContext(previousCanvas);
+    previousCanvas.remove();
+  });
 }
 
 /**
@@ -344,13 +344,11 @@ function reset() {
 
 /**
  * Rebuild the scene when the background element or any raised element is resized.
- * Resizes are debounced: they come in bursts, and a resized canvas restarts the path tracer.
+ * Rebuilding is immediate, so that the effect follows the layout: a ResizeObserver already
+ * reports at most once per animation frame, however many changes went into that frame.
  */
 function observeResize() {
-  const resizeObserver = new ResizeObserver(() => {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(reset, resizeDebounce);
-  });
+  const resizeObserver = new ResizeObserver(reset);
   resizeObserver.observe(backgroundElement);
   for (const element of raisedElements) {
     resizeObserver.observe(element);
