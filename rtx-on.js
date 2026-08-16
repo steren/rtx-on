@@ -49,6 +49,12 @@ const maxSize = 2048;
 // buffer whose proportions are off by a step stretches the image by as much: more steps means
 // a more faithful image, fewer steps means fewer rebuilds.
 const sizeStepsPerDoubling = 8;
+// The drawing buffer covers the element at this many pixels per CSS pixel. Tracing cost grows
+// with the square of it, and what is being drawn is a soft shadow rather than fine detail, so
+// it stays at one rather than following the pixel density of the screen: on a high density
+// screen the buffer is stretched over more device pixels, which is hard to notice on a
+// gradient and much cheaper to trace.
+const pixelRatio = 1;
 
 let initialized = false;
 let enabled = false;
@@ -73,15 +79,15 @@ function bucketSize(size) {
 
 /**
  * Size of the canvas drawing buffer for a background element of the given size.
- * The path tracer renders at any canvas size, so the buffer covers the element, at the pixel
- * density of the screen, rounded up to the next step of the ladder and never above maxSize.
+ * The path tracer renders at any canvas size, so the buffer covers the element at pixelRatio,
+ * rounded up to the next step of the ladder and never above maxSize.
  * Sizes come from getBoundingClientRect() and can be fractional: a canvas can only be an
  * integer number of pixels wide.
  * @param {DOMRect} rect size of the background element
  * @returns {{width: number, height: number}} size of the drawing buffer, in pixels
  */
 function canvasSize({ width, height }) {
-  const scale = Math.min(window.devicePixelRatio || 1, maxSize / Math.max(width, height));
+  const scale = Math.min(pixelRatio, maxSize / Math.max(width, height));
 
   return {
     width: Math.min(maxSize, bucketSize(width * scale)),
