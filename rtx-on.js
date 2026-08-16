@@ -22,6 +22,7 @@ const white = [1, 1, 1];
 
 const rtxGreen = '#76b900';
 
+// Largest canvas we are willing to path trace. Must be a power of two, see ceilToPowerOfTwo().
 // TODO: adjust this based some hardware capabilities?
 // navigator.deviceMemory
 // GPUSupportedLimits ?
@@ -35,18 +36,30 @@ let ui;
 let pauseTimer;
 
 /**
- * Round a size up to the closest power of two.
- * Sizes come from getBoundingClientRect() and can be fractional: the fractional part is
- * dropped, as a canvas can only be an integer number of pixels wide.
- * @param {number} size
- * @returns {number} a power of two
+ * Smallest power of two that covers the given size.
+ *
+ * The path tracer needs a square, power of two canvas: webgl-path-tracing refuses to start
+ * on anything else, and its two render targets are sampled with the default REPEAT wrapping,
+ * which WebGL 1 does not allow on non power of two textures.
+ *
+ * Sizes come from getBoundingClientRect() and are routinely fractional. The fraction is
+ * dropped before rounding up, so an element 1024.34px wide gets a 1024px canvas rather than
+ * a 2048px one. That costs at most one pixel of resolution (0.1%, imperceptible on a soft
+ * shadow) and saves the path tracer four times the fragments, so it is worth the one pixel.
+ *
+ * @param {number} size in CSS pixels
+ * @returns {number} a power of two, never below 1
  */
-function closestPowerOfTwo(size) {
+function ceilToPowerOfTwo(size) {
   const pixels = Math.floor(size);
+  // A zero sized canvas makes an incomplete framebuffer, which fails every WebGL draw call.
   if (pixels <= 1) {
     return 1;
   }
-  return 2 ** Math.ceil(Math.log2(pixels));
+  // Math.clz32() counts leading zero bits, which gives the next power of two exactly.
+  // Math.log2() would read better here, but it is only approximated by the spec, and being
+  // off by an ulp at a power of two would quadruple the canvas.
+  return 2 ** (32 - Math.clz32(pixels - 1));
 }
 
 /**
@@ -179,9 +192,9 @@ function styleCanvas(canvas, element, startDisplayed = false) {
   const rect = element.getBoundingClientRect();
   const { borderTopWidth, borderLeftWidth } = window.getComputedStyle(element);
 
-  // canvas must be square and of power of two
-  // use the element largest width / height and round it up to the next power of two
-  const size = Math.min(closestPowerOfTwo(Math.max(rect.width, rect.height)), maxSize);
+  // canvas must be square and of power of two, so cover the element's largest side.
+  // maxSize is itself a power of two, so clamping to it preserves that.
+  const size = Math.min(ceilToPowerOfTwo(Math.max(rect.width, rect.height)), maxSize);
 
   canvas.inert = true;
   canvas.width = size;
