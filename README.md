@@ -46,6 +46,8 @@ Removes any existing box shadow effect.
  * `forceLightMode`: if `true`, the effect will always apply at full light. Defaults to `false`. Set to `true` if your website does *not* implement dark mode.
  * `moveLightOnClick`: Set to `true` to move the light under the cursor when clicking on the page. Default to false.
 
+Raised elements keep their `border-radius`: a rounded element is rendered as a rounded box, and casts a shadow with rounded corners. The rendered shape has a single radius shared by its four corners, so an element whose corners differ gets their average.
+
 #### `rtx.off()`
 
 Turn off the ray traced shadow effect.

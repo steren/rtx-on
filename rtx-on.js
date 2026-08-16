@@ -1,4 +1,4 @@
-import { makePathTracer, Cube } from 'webgl-path-tracing';
+import { makePathTracer, Cube, ExtrudedRectangle } from 'webgl-path-tracing';
 import { Vector } from 'sylvester';
 
 // Height of the raised elements, in scene units.
@@ -26,6 +26,14 @@ const lightValDarkMode = 0.15;
 // Computed value of a fully transparent color, and the color used as fallback.
 const transparent = 'rgba(0, 0, 0, 0)';
 const white = [1, 1, 1];
+
+// The four corner radii of an element, as computed style properties.
+const borderRadiusProperties = [
+  'borderTopLeftRadius',
+  'borderTopRightRadius',
+  'borderBottomRightRadius',
+  'borderBottomLeftRadius',
+];
 
 const rtxGreen = '#76b900';
 
@@ -121,6 +129,50 @@ function extractRGBColor(element) {
 }
 
 /**
+ * Resolve one component of a corner radius to pixels.
+ * Computed styles give lengths in pixels, but keep percentages as they were written: a
+ * percentage of the width for the horizontal component, of the height for the vertical one.
+ * @param {string} value computed value of the component
+ * @param {number} extent size of the element along the axis of that component, in pixels
+ * @returns {number} radius in pixels
+ */
+function resolveRadiusComponent(value, extent) {
+  const amount = Number.parseFloat(value);
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return 0;
+  }
+
+  return value.endsWith('%') ? (amount * extent) / 100 : amount;
+}
+
+/**
+ * Border radius of an element, in pixels.
+ * The scene shape only has a single radius, shared by its four corners, so elliptical corners
+ * are reduced to their smaller component and the four corners are averaged: an element with
+ * mixed radii gets the roundness it has on average, and one with a uniform radius, by far the
+ * common case, gets exactly its own.
+ * @param {HTMLElement} element
+ * @param {DOMRect} rect size of the element
+ * @returns {number} radius in pixels, 0 when the element has square corners
+ */
+function extractBorderRadius(element, { width, height }) {
+  const style = window.getComputedStyle(element);
+
+  const radii = borderRadiusProperties.map((property) => {
+    // elliptical corners are computed as two components, "10px 20px", circular ones as one
+    const [horizontal, vertical = horizontal] = style[property].split(' ');
+
+    return Math.min(
+      resolveRadiusComponent(horizontal, width),
+      resolveRadiusComponent(vertical, height),
+    );
+  });
+
+  return radii.reduce((total, radius) => total + radius, 0) / radii.length;
+}
+
+/**
  * Remove the background color and box shadow of an element, storing them as data attributes.
  * @param {HTMLElement} element
  */
@@ -189,6 +241,10 @@ function makeScene(background, elements) {
   // TODO: should we also handle scroll position?
   const toSceneX = (x) => halfWidth * ((2 * (x - backgroundRect.left)) / backgroundRect.width - 1);
   const toSceneY = (y) => halfHeight * (1 - (2 * (y - backgroundRect.top)) / backgroundRect.height);
+  // Lengths keep their proportions: the scene is normalized by the same factor on both axes.
+  const toSceneLength = (length) => (backgroundRect.height > 0
+    ? (2 * halfHeight * length) / backgroundRect.height
+    : 0);
 
   for (const element of elements) {
     const rect = element.getBoundingClientRect();
@@ -197,12 +253,17 @@ function makeScene(background, elements) {
       continue;
     }
 
-    objects.push(new Cube(
-      Vector.create([toSceneX(rect.left), toSceneY(rect.bottom), zBase]),
-      Vector.create([toSceneX(rect.right), toSceneY(rect.top), zBase + zHeight]),
-      nextObjectId++,
-      Vector.create(extractRGBColor(element)),
-    ));
+    const minCorner = Vector.create([toSceneX(rect.left), toSceneY(rect.bottom), zBase]);
+    const maxCorner = Vector.create([toSceneX(rect.right), toSceneY(rect.top), zBase + zHeight]);
+    const color = Vector.create(extractRGBColor(element));
+    const borderRadius = toSceneLength(extractBorderRadius(element, rect));
+
+    // A rounded element is extruded towards the camera, so that the corners of the face it
+    // shows are the ones rounded off. Square elements stay cubes: the shape is cheaper to
+    // trace, and both give the same result at a radius of zero.
+    objects.push(borderRadius > 0
+      ? new ExtrudedRectangle(minCorner, maxCorner, borderRadius, nextObjectId++, color, 'z')
+      : new Cube(minCorner, maxCorner, nextObjectId++, color));
   }
 
   return objects;
