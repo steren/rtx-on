@@ -34,6 +34,6 @@
     "webgl-path-tracing": "^1.11.0"
   },
   "devDependencies": {
-    "serve": "^14.2.4"
+    "serve": "^14.2.6"
   }
 }
