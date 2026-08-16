@@ -284,44 +284,35 @@ function startPathTracer() {
 }
 
 /**
- * Release the WebGL context of a canvas that is about to be dropped: browsers only allow
- * a handful of live contexts, and a lost one is reclaimed right away.
+ * The WebGL context a canvas was initialized with, or null if it has none.
  * @param {HTMLCanvasElement} canvas
+ * @returns {?WebGLRenderingContext}
  */
-function releaseContext(canvas) {
+function canvasContext(canvas) {
+  // getContext() returns the context the canvas already has, and null for the types it was
+  // not initialized with, so this never creates one
   for (const type of ['webgl2', 'webgl', 'experimental-webgl']) {
-    // returns the existing context, or null if the canvas was not initialized with that type
     const gl = canvas.getContext(type);
-    gl?.getExtension('WEBGL_lose_context')?.loseContext();
+    if (gl) {
+      return gl;
+    }
   }
+  return null;
 }
 
 /**
- * Restart the path tracer on a brand new canvas.
- * The renderer bakes the size of the drawing buffer into its shaders and its accumulation
- * textures, and the WebGL viewport of a context is fixed when the context is created, so a
- * canvas whose size changed cannot be reused.
+ * Restart the path tracer after the drawing buffer was resized.
+ * The renderer bakes the size of the buffer into its shaders and its accumulation textures,
+ * and neither can be resized, so it has to be built again. It is rebuilt on the same canvas:
+ * makePathTracer() reads the new size off it and reuses its WebGL context, which is by far
+ * the most expensive thing to create.
  */
 function restartPathTracer() {
-  const previousCanvas = backgroundCanvas;
-
-  backgroundCanvas = document.createElement('canvas');
-  styleCanvas(backgroundCanvas, backgroundElement, true);
-  // keep the visibility of the canvas being replaced, to avoid flashing the effect back on
-  backgroundCanvas.style.opacity = previousCanvas.style.opacity;
-  backgroundElement.appendChild(backgroundCanvas);
-
   startPathTracer();
-  if (!enabled) {
-    ui.renderer.pause();
-  }
 
-  // drop the canvas being replaced only once the new one has had a frame to render into,
-  // so that the swap never shows an empty canvas
-  window.requestAnimationFrame(() => {
-    releaseContext(previousCanvas);
-    previousCanvas.remove();
-  });
+  // the viewport of a context is only ever set when the context is created, so it still
+  // covers the previous size of the drawing buffer
+  canvasContext(backgroundCanvas)?.viewport(0, 0, backgroundCanvas.width, backgroundCanvas.height);
 }
 
 /**
@@ -329,16 +320,23 @@ function restartPathTracer() {
  */
 function reset() {
   const { width, height } = canvasSize(backgroundElement.getBoundingClientRect());
-  if (width !== backgroundCanvas.width || height !== backgroundCanvas.height) {
+  const resized = width !== backgroundCanvas.width || height !== backgroundCanvas.height;
+
+  // the canvas has to carry its new size before the path tracer reads it back
+  styleCanvas(backgroundCanvas, backgroundElement, true);
+
+  if (resized) {
     restartPathTracer();
-    return;
+  } else {
+    // the buffer still fits, so only the scene has to be rebuilt, which is much cheaper
+    ui.setObjects(makeScene(backgroundElement, raisedElements));
   }
 
-  ui.setObjects(makeScene(backgroundElement, raisedElements));
   if (enabled) {
     ui.renderer.resume();
+  } else {
+    ui.renderer.pause();
   }
-  styleCanvas(backgroundCanvas, backgroundElement, true);
   schedulePause();
 }
 
