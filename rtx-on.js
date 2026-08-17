@@ -10,8 +10,15 @@ const opacityTransition = '0.5s';
 // Pause the renderer after this period of inactivity (in ms).
 const pauseAfter = 10 * 1000;
 
+// Camera. The field of view and this zoom, the distance of the camera to the scene, are
+// picked so that a square canvas frames exactly [-1, 1] on both axes.
+const squareZoom = 76;
+const fov = 1.5;
+
 const lightElevation = 1.5;
-const lightPosition = [0.75, 0.75, 1.5];
+// Light position, normalized between -1 and 1 within the background element.
+// Scaled to the extent of the scene to get scene coordinates.
+const defaultLightPosition = [0.75, 0.75, lightElevation];
 const lightSize = 0.75;
 const lightValLightMode = 0.6;
 const lightValDarkMode = 0.15;
@@ -42,20 +49,61 @@ let backgroundElement;
 let backgroundCanvas;
 let raisedElements = [];
 let ui;
+let lightPosition = [...defaultLightPosition];
 let pauseTimer;
 
 /**
- * Side of the square drawing buffer covering a background element of the given size.
- * The camera frames a square canvas onto the scene and CSS stretches that square back over the
- * element, so the buffer covers the largest side of the element pixel for pixel, and only
- * loses resolution above maxSize. Sizes come from getBoundingClientRect() and can be
- * fractional: the fractional part is dropped, as a canvas can only be an integer number of
- * pixels wide.
+ * Size of the drawing buffer covering a background element of the given size.
+ * The buffer has the size of the element, pixel for pixel, and is only scaled down, keeping
+ * its proportions, when its largest side would go above maxSize. Sizes come from
+ * getBoundingClientRect() and can be fractional: the fractional part is dropped, as a canvas
+ * can only be an integer number of pixels wide.
  * @param {DOMRect} rect size of the background element
- * @returns {number} side of the drawing buffer, in pixels
+ * @returns {{width: number, height: number}} size of the drawing buffer, in pixels
  */
 function canvasSize({ width, height }) {
-  return Math.max(1, Math.min(Math.floor(Math.max(width, height)), maxSize));
+  const scale = Math.min(1, maxSize / Math.max(width, height));
+
+  return {
+    width: Math.max(1, Math.floor(width * scale)),
+    height: Math.max(1, Math.floor(height * scale)),
+  };
+}
+
+/**
+ * How much of the scene the canvas frames, and the matching camera zoom.
+ * The path tracer keeps the vertical field of view of its camera and widens the horizontal one
+ * to match the aspect ratio of the drawing buffer, and it renders inside a room, a cube
+ * spanning [-1, 1] on every axis. So the scene is normalized to [-1, 1] along the largest side
+ * of the buffer, to keep it within the room, and the camera is moved closer by as much so that
+ * the scene still fills the canvas.
+ * This follows the drawing buffer rather than the element: the buffer is given the proportions
+ * of the element once, when the effect starts, and keeps them from then on, while the element
+ * is free to be resized to any others.
+ * @param {HTMLCanvasElement} canvas
+ * @returns {{halfWidth: number, halfHeight: number, zoom: number}} half extent of the scene, and camera zoom
+ */
+function sceneExtent({ width, height }) {
+  const aspect = height > 0 ? width / height : 1;
+  const scale = Math.max(1, aspect);
+
+  return {
+    halfWidth: aspect / scale,
+    halfHeight: 1 / scale,
+    zoom: squareZoom / scale,
+  };
+}
+
+/**
+ * Position of the light in scene coordinates.
+ * @param {HTMLCanvasElement} canvas
+ * @returns {number[]} [x, y, z]
+ */
+function sceneLightPosition(canvas) {
+  const { halfWidth, halfHeight } = sceneExtent(canvas);
+  const [x, y, z] = lightPosition;
+
+  return [x * halfWidth, y * halfHeight, z];
 }
 
 /**
@@ -175,6 +223,8 @@ function restoreStyle(element) {
  */
 function makeScene(background, elements) {
   const backgroundRect = background.getBoundingClientRect();
+  // the scene is framed by the canvas, and the element is mapped onto that frame below
+  const { halfWidth, halfHeight } = sceneExtent(backgroundCanvas);
   let nextObjectId = 0;
 
   // Background element.
@@ -189,16 +239,18 @@ function makeScene(background, elements) {
     ),
   ];
 
-  // Viewport coordinates, normalized between -1 and 1 within the background element.
+  // Viewport coordinates, normalized to the extent of the scene within the background element.
   // TODO: should we also handle scroll position?
-  const toSceneX = (x) => (2 * (x - backgroundRect.left)) / backgroundRect.width - 1;
-  const toSceneY = (y) => 1 - (2 * (y - backgroundRect.top)) / backgroundRect.height;
-  // Each axis is normalized by its own side of the element, so a pixel is worth a different
-  // scene length along x and y unless the element is square. A corner radius is a single
-  // number, so it converts with the geometric mean of the two, which splits the difference:
-  // on a wide element the rendered corners come out a little taller than they are wide.
+  const toSceneX = (x) => halfWidth * ((2 * (x - backgroundRect.left)) / backgroundRect.width - 1);
+  const toSceneY = (y) => halfHeight * (1 - (2 * (y - backgroundRect.top)) / backgroundRect.height);
+  // Each axis is normalized by its own side of the element, and a pixel is worth the same
+  // scene length along both as long as the element has kept the proportions the canvas was
+  // built with. A corner radius is a single number, so it converts with the geometric mean of
+  // the two: exact until the element is resized to other proportions, and off by as much as
+  // the image is stretched after that.
   const toSceneLength = (length) => (backgroundRect.width > 0 && backgroundRect.height > 0
-    ? (2 * length) / Math.sqrt(backgroundRect.width * backgroundRect.height)
+    ? 2 * length * Math.sqrt((halfWidth * halfHeight)
+      / (backgroundRect.width * backgroundRect.height))
     : 0);
 
   for (const element of elements) {
@@ -244,18 +296,19 @@ function getBoxShadowDescendants(element) {
  * @param {HTMLElement} element background element
  */
 function sizeCanvas(canvas, element) {
-  const size = canvasSize(element.getBoundingClientRect());
+  const { width, height } = canvasSize(element.getBoundingClientRect());
 
   canvas.inert = true;
-  canvas.width = size;
-  canvas.height = size;
+  canvas.width = width;
+  canvas.height = height;
 }
 
 /**
  * Position the canvas over the background element and stretch it to its size.
- * The buffer is a square and the scene is normalized between -1 and 1 along both sides of the
- * element, so stretching that square over the element is what lines the render up with it,
- * whatever size the element has since taken.
+ * The scene is normalized to the extent the canvas frames along both of its axes, so
+ * stretching the canvas over the element is what lines the render up with it, whatever size
+ * the element has since taken. A resize that changes the proportions of the element stretches
+ * the image by as much: the drawing buffer keeps the ones it was built with.
  * @param {HTMLCanvasElement} canvas
  * @param {HTMLElement} element background element
  * @param {boolean} [startDisplayed] when false, the canvas starts hidden and fades in
@@ -326,7 +379,9 @@ function enableMoveLightOnClick() {
     const x = (2 * (event.clientX - rect.left)) / rect.width - 1;
     const y = 1 - (2 * (event.clientY - rect.top)) / rect.height;
 
-    ui.setLightPosition([x, y, lightElevation]);
+    // stored normalized, so that the light stays under the cursor when the page is resized
+    lightPosition = [x, y, lightElevation];
+    ui.setLightPosition(sceneLightPosition(backgroundCanvas));
     reset();
   });
 }
@@ -396,7 +451,10 @@ function initRTX({ background, raised, disableIfDarkMode = false, forceLightMode
 
   raisedElements = raised ?? getBoxShadowDescendants(backgroundElement);
 
-  // if height is more than 3x width or width is more than 3x height, skip
+  // The canvas can be of any size, but the height of the raised elements and the elevation of
+  // the light are fixed in scene units, and the scene shrinks along the smallest side of the
+  // background element: extreme aspect ratios would make the elements look like towers.
+  // So if height is more than 3x width or width is more than 3x height, skip
   const { width, height } = backgroundElement.getBoundingClientRect();
   if (height > width * 3 || width > height * 3) {
     console.warn(`Not applying RTX, background element is too wide or too tall. height: ${height}, width: ${width}`);
@@ -412,9 +470,9 @@ function initRTX({ background, raised, disableIfDarkMode = false, forceLightMode
   backgroundElement.appendChild(backgroundCanvas);
 
   const config = {
-    zoom: 76,
-    fov: 1.5,
-    lightPosition,
+    zoom: sceneExtent(backgroundCanvas).zoom,
+    fov,
+    lightPosition: sceneLightPosition(backgroundCanvas),
     lightSize,
     lightVal,
   };
