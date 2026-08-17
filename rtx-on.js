@@ -30,6 +30,8 @@ const borderRadiusProperties = [
 
 const rtxGreen = '#76b900';
 
+// Largest side of the drawing buffer, in pixels. Bigger elements are rendered into a
+// smaller canvas that CSS scales back up.
 // TODO: adjust this based some hardware capabilities?
 // navigator.deviceMemory
 // GPUSupportedLimits ?
@@ -43,18 +45,17 @@ let ui;
 let pauseTimer;
 
 /**
- * Round a size up to the closest power of two.
- * Sizes come from getBoundingClientRect() and can be fractional: the fractional part is
- * dropped, as a canvas can only be an integer number of pixels wide.
- * @param {number} size
- * @returns {number} a power of two
+ * Side of the square drawing buffer covering a background element of the given size.
+ * The camera frames a square canvas onto the scene and CSS stretches that square back over the
+ * element, so the buffer covers the largest side of the element pixel for pixel, and only
+ * loses resolution above maxSize. Sizes come from getBoundingClientRect() and can be
+ * fractional: the fractional part is dropped, as a canvas can only be an integer number of
+ * pixels wide.
+ * @param {DOMRect} rect size of the background element
+ * @returns {number} side of the drawing buffer, in pixels
  */
-function closestPowerOfTwo(size) {
-  const pixels = Math.floor(size);
-  if (pixels <= 1) {
-    return 1;
-  }
-  return 2 ** Math.ceil(Math.log2(pixels));
+function canvasSize({ width, height }) {
+  return Math.max(1, Math.min(Math.floor(Math.max(width, height)), maxSize));
 }
 
 /**
@@ -234,7 +235,27 @@ function getBoxShadowDescendants(element) {
 }
 
 /**
- * Size and position the canvas so that it covers the background element.
+ * Give the canvas its drawing buffer, at the size of the background element.
+ * Only ever called once, when the effect starts: the path tracer bakes the size of the buffer
+ * into its shaders and its accumulation textures, so a buffer that follows the element would
+ * mean rebuilding the tracer on every resize, which costs far more than letting CSS stretch
+ * the buffer it already has.
+ * @param {HTMLCanvasElement} canvas
+ * @param {HTMLElement} element background element
+ */
+function sizeCanvas(canvas, element) {
+  const size = canvasSize(element.getBoundingClientRect());
+
+  canvas.inert = true;
+  canvas.width = size;
+  canvas.height = size;
+}
+
+/**
+ * Position the canvas over the background element and stretch it to its size.
+ * The buffer is a square and the scene is normalized between -1 and 1 along both sides of the
+ * element, so stretching that square over the element is what lines the render up with it,
+ * whatever size the element has since taken.
  * @param {HTMLCanvasElement} canvas
  * @param {HTMLElement} element background element
  * @param {boolean} [startDisplayed] when false, the canvas starts hidden and fades in
@@ -242,14 +263,6 @@ function getBoxShadowDescendants(element) {
 function styleCanvas(canvas, element, startDisplayed = false) {
   const rect = element.getBoundingClientRect();
   const { borderTopWidth, borderLeftWidth } = window.getComputedStyle(element);
-
-  // canvas must be square and of power of two
-  // use the element largest width / height and round it up to the next power of two
-  const size = Math.min(closestPowerOfTwo(Math.max(rect.width, rect.height)), maxSize);
-
-  canvas.inert = true;
-  canvas.width = size;
-  canvas.height = size;
 
   Object.assign(canvas.style, {
     position: 'absolute',
@@ -394,6 +407,7 @@ function initRTX({ background, raised, disableIfDarkMode = false, forceLightMode
   backgroundElement.style.position = 'relative';
 
   backgroundCanvas = document.createElement('canvas');
+  sizeCanvas(backgroundCanvas, backgroundElement);
   styleCanvas(backgroundCanvas, backgroundElement);
   backgroundElement.appendChild(backgroundCanvas);
 
