@@ -48,6 +48,8 @@ Removes any existing box shadow effect.
 
 Raised elements keep their `border-radius`: a rounded element is rendered as a rounded box, and casts a shadow with rounded corners. The rendered shape has a single radius shared by its four corners, so an element whose corners differ gets their average.
 
+The scene is rendered through an orthographic camera, so a raised element covers exactly the rectangle of the element it stands for, wherever that element sits on the page: being raised neither enlarges it nor turns its sides towards the viewer.
+
 #### `rtx.off()`
 
 Turn off the ray traced shadow effect.
