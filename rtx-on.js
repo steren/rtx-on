@@ -46,12 +46,22 @@ const borderRadiusProperties = [
 
 const rtxGreen = '#76b900';
 
-// Largest side of the drawing buffer, in pixels. Bigger elements are rendered into a
-// smaller canvas that CSS scales back up.
-// TODO: adjust this based some hardware capabilities?
-// navigator.deviceMemory
-// GPUSupportedLimits ?
-const maxSize = 2048;
+// Largest side of the drawing buffer, in pixels, on a device that tells us nothing about
+// itself. Bigger elements are rendered into a smaller canvas that CSS scales back up.
+const defaultMaxSize = 2048;
+
+// Smaller buffers for devices that report little memory, keyed by the amount they report, in
+// GB. The path tracer keeps two accumulation textures the size of the drawing buffer, of up to
+// 16 bytes per pixel each, so a 2048 buffer can hold 130 MB of them before a single ray is
+// traced, and every one of those pixels is then traced again on every frame. Read in order:
+// the first tier the device fits in wins, anything above the last one gets the default.
+const maxSizeByMemory = [
+  { memory: 1, maxSize: 1024 },
+  { memory: 4, maxSize: 1536 },
+];
+
+// Largest side of the drawing buffer for this device, computed once by maxDrawingBufferSize().
+let deviceMaxSize;
 
 let initialized = false;
 let backgroundElement;
@@ -62,16 +72,73 @@ let lightPosition = [...defaultLightPosition];
 let pauseTimer;
 
 /**
+ * Largest side the WebGL implementation can render into, in pixels.
+ * The tracer accumulates into textures the size of the drawing buffer and draws them through
+ * the viewport, so a buffer past any of these limits is not slow but broken: the texture fails
+ * to allocate, and the canvas stays black. Probed on a throwaway canvas, as the context of the
+ * canvas we render into is created by the path tracer, with attributes of its own, and a canvas
+ * only ever hands out the context it created first.
+ * @returns {number} the limit in pixels, or Infinity when nothing usable is reported
+ */
+function hardwareMaxSize() {
+  const canvas = document.createElement('canvas');
+
+  let gl;
+  try {
+    gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+  } catch {
+    gl = null;
+  }
+  // no WebGL at all: the tracer will not start either way, leave the limit alone
+  if (!gl) {
+    return Infinity;
+  }
+
+  const limits = [
+    gl.getParameter(gl.MAX_TEXTURE_SIZE),
+    gl.getParameter(gl.MAX_RENDERBUFFER_SIZE),
+    // both sides of MAX_VIEWPORT_DIMS, as the buffer can be turned either way
+    ...(gl.getParameter(gl.MAX_VIEWPORT_DIMS) ?? []),
+  ];
+  // one context per canvas is a scarce resource: hand this one back right away
+  gl.getExtension('WEBGL_lose_context')?.loseContext();
+
+  // a driver that reports nothing usable, or a context lost while being probed, gives Infinity
+  return Math.min(...limits.filter((limit) => limit > 0), Infinity);
+}
+
+/**
+ * Largest side of the drawing buffer on this device, in pixels.
+ * Two things bound it: what the hardware can render into at all, and how much of it is worth
+ * asking a device for. The second one goes by the memory the device reports, a coarse figure
+ * only Chromium browsers give, and the only hint at how modest a device is that can be read
+ * synchronously: a WebGPU adapter, and the GPUSupportedLimits it carries, is only reachable
+ * through an async request, and describes a device the effect does not render through anyway.
+ * Computed once, and kept: none of it changes while the page is open.
+ * @returns {number} the largest side allowed, in pixels
+ */
+function maxDrawingBufferSize() {
+  if (deviceMaxSize === undefined) {
+    const memory = navigator.deviceMemory;
+    const tier = memory > 0 ? maxSizeByMemory.find(({ memory: max }) => memory <= max) : undefined;
+
+    deviceMaxSize = Math.min(tier?.maxSize ?? defaultMaxSize, hardwareMaxSize());
+  }
+
+  return deviceMaxSize;
+}
+
+/**
  * Size of the drawing buffer covering a background element of the given size.
  * The buffer has the size of the element, pixel for pixel, and is only scaled down, keeping
- * its proportions, when its largest side would go above maxSize. Sizes come from
- * getBoundingClientRect() and can be fractional: the fractional part is dropped, as a canvas
- * can only be an integer number of pixels wide.
+ * its proportions, when its largest side would go above what this device allows. Sizes come
+ * from getBoundingClientRect() and can be fractional: the fractional part is dropped, as a
+ * canvas can only be an integer number of pixels wide.
  * @param {DOMRect} rect size of the background element
  * @returns {{width: number, height: number}} size of the drawing buffer, in pixels
  */
 function canvasSize({ width, height }) {
-  const scale = Math.min(1, maxSize / Math.max(width, height));
+  const scale = Math.min(1, maxDrawingBufferSize() / Math.max(width, height));
 
   return {
     width: Math.max(1, Math.floor(width * scale)),
