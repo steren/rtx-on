@@ -60,9 +60,6 @@ const maxSizeByMemory = [
   { memory: 4, maxSize: 1536 },
 ];
 
-// Largest side of the drawing buffer for this device, computed once by maxDrawingBufferSize().
-let deviceMaxSize;
-
 let initialized = false;
 let backgroundElement;
 let backgroundCanvas;
@@ -114,19 +111,25 @@ function hardwareMaxSize() {
  * only Chromium browsers give, and the only hint at how modest a device is that can be read
  * synchronously: a WebGPU adapter, and the GPUSupportedLimits it carries, is only reachable
  * through an async request, and describes a device the effect does not render through anyway.
- * Computed once, and kept: none of it changes while the page is open.
+ * Computed on first use, and kept in the closure: none of it changes while the page is open,
+ * and computing it any earlier would create a WebGL context on every page that imports this
+ * module, including the ones that never turn the effect on.
  * @returns {number} the largest side allowed, in pixels
  */
-function maxDrawingBufferSize() {
-  if (deviceMaxSize === undefined) {
-    const memory = navigator.deviceMemory;
-    const tier = memory > 0 ? maxSizeByMemory.find(({ memory: max }) => memory <= max) : undefined;
+const maxDrawingBufferSize = (() => {
+  let deviceMaxSize;
 
-    deviceMaxSize = Math.min(tier?.maxSize ?? defaultMaxSize, hardwareMaxSize());
-  }
+  return () => {
+    if (deviceMaxSize === undefined) {
+      const memory = navigator.deviceMemory;
+      const tier = memory > 0 ? maxSizeByMemory.find(({ memory: max }) => memory <= max) : undefined;
 
-  return deviceMaxSize;
-}
+      deviceMaxSize = Math.min(tier?.maxSize ?? defaultMaxSize, hardwareMaxSize());
+    }
+
+    return deviceMaxSize;
+  };
+})();
 
 /**
  * Size of the drawing buffer covering a background element of the given size.
