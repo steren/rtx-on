@@ -1,34 +1,18 @@
-import { makePathTracer, Cube, ExtrudedRectangle } from 'webgl-path-tracing';
-import { Vector } from 'sylvester';
+import { makeRadianceCascades } from './radiance-cascades.js';
 
 // Height of the raised elements, in scene units.
 const zHeight = 0.1;
-// Z coordinate of the background plane (-1 is the room wall).
-const zBase = 0;
 // Time to make the effect appear.
 const opacityTransition = '0.5s';
 // Pause the renderer after this period of inactivity (in ms).
 const pauseAfter = 10 * 1000;
 
-// Camera. An orthographic one: its rays are parallel, so a raised element covers exactly the
-// rectangle of the page element it stands for, wherever that element sits on the page, and the
-// height it is raised by neither widens it nor turns its sides towards the camera. A
-// perspective camera would only get there in the limit of a very long lens.
-// The distance of the camera to the scene, which an orthographic projection uses to place the
-// plane its rays start from rather than to frame anything: what the camera frames is the
-// height of its view, see sceneExtent().
-const cameraDistance = 2.5;
-
-// How far the backdrop extends past the room. The camera frames the scene right up to the
-// walls along the largest side of the canvas, and a parallel ray landing exactly on the edge
-// of the backdrop would graze its side rather than hit its face, and come back black.
-const backdropMargin = 0.05;
-
 const lightElevation = 1.5;
 // Light position, normalized between -1 and 1 within the background element.
 // Scaled to the extent of the scene to get scene coordinates.
 const defaultLightPosition = [0.75, 0.75, lightElevation];
-const lightSize = 0.75;
+// Radius of the light, in scene units. Sets how soft the shadows it casts are.
+const lightSize = 0.3;
 const lightValLightMode = 0.6;
 const lightValDarkMode = 0.15;
 
@@ -57,7 +41,7 @@ let initialized = false;
 let backgroundElement;
 let backgroundCanvas;
 let raisedElements = [];
-let ui;
+let renderer;
 let lightPosition = [...defaultLightPosition];
 let pauseTimer;
 
@@ -81,15 +65,15 @@ function canvasSize({ width, height }) {
 
 /**
  * How much of the scene the canvas frames.
- * The path tracer takes the height of the view of its orthographic camera and widens it to
- * match the aspect ratio of the drawing buffer, and it renders inside a room, a cube spanning
- * [-1, 1] on every axis. So the scene is normalized to [-1, 1] along the largest side of the
- * buffer, to keep it within the room, and the view is given the height that frames it.
+ * The scene is seen from straight above, so the canvas maps onto it one to one: it is
+ * normalized to [-1, 1] along the largest side of the drawing buffer, and to whatever the
+ * proportions of the buffer give along the other. The heights the renderer works with, of the
+ * raised elements and of the light, are in those same units.
  * This follows the drawing buffer rather than the element: the buffer is given the proportions
  * of the element once, when the effect starts, and keeps them from then on, while the element
  * is free to be resized to any others.
  * @param {HTMLCanvasElement} canvas
- * @returns {{halfWidth: number, halfHeight: number, viewHeight: number}} half extent of the scene, and height of the camera view
+ * @returns {{halfWidth: number, halfHeight: number}} half extent of the scene
  */
 function sceneExtent({ width, height }) {
   const aspect = height > 0 ? width / height : 1;
@@ -98,7 +82,6 @@ function sceneExtent({ width, height }) {
   return {
     halfWidth: aspect / scale,
     halfHeight: 1 / scale,
-    viewHeight: 2 / scale,
   };
 }
 
@@ -224,28 +207,16 @@ function restoreStyle(element) {
 }
 
 /**
- * Build the scene: the background plane, plus one box per raised element.
+ * Build the scene: the color of the background, plus one raised rounded rectangle per raised
+ * element, in the scene coordinates the canvas frames.
  * @param {HTMLElement} background
  * @param {Iterable<HTMLElement>} elements raised elements
- * @returns {Array<Cube|ExtrudedRectangle>} the objects of the scene
+ * @returns {{background: number[], elements: Array<object>}} the scene
  */
 function makeScene(background, elements) {
   const backgroundRect = background.getBoundingClientRect();
   // the scene is framed by the canvas, and the element is mapped onto that frame below
   const { halfWidth, halfHeight } = sceneExtent(backgroundCanvas);
-  let nextObjectId = 0;
-
-  // Background element.
-  // For now, always make it white, for a better effect.
-  // TODO: Retain the hue
-  const objects = [
-    new Cube(
-      Vector.create([-1 - backdropMargin, -1 - backdropMargin, zBase - 1]),
-      Vector.create([1 + backdropMargin, 1 + backdropMargin, zBase]),
-      nextObjectId++,
-      Vector.create([...white]),
-    ),
-  ];
 
   // Viewport coordinates, normalized to the extent of the scene within the background element.
   // TODO: should we also handle scroll position?
@@ -261,6 +232,8 @@ function makeScene(background, elements) {
       / (backgroundRect.width * backgroundRect.height))
     : 0);
 
+  const raised = [];
+
   for (const element of elements) {
     const rect = element.getBoundingClientRect();
     // ignore elements that have no height or width
@@ -268,20 +241,22 @@ function makeScene(background, elements) {
       continue;
     }
 
-    const minCorner = Vector.create([toSceneX(rect.left), toSceneY(rect.bottom), zBase]);
-    const maxCorner = Vector.create([toSceneX(rect.right), toSceneY(rect.top), zBase + zHeight]);
-    const color = Vector.create(extractRGBColor(element));
-    const borderRadius = toSceneLength(extractBorderRadius(element, rect));
+    const left = toSceneX(rect.left);
+    const right = toSceneX(rect.right);
+    const bottom = toSceneY(rect.bottom);
+    const top = toSceneY(rect.top);
 
-    // A rounded element is extruded towards the camera, so that the corners of the face it
-    // shows are the ones rounded off. Square elements stay cubes: the shape is cheaper to
-    // trace, and both give the same result at a radius of zero.
-    objects.push(borderRadius > 0
-      ? new ExtrudedRectangle(minCorner, maxCorner, borderRadius, nextObjectId++, color, 'z')
-      : new Cube(minCorner, maxCorner, nextObjectId++, color));
+    raised.push({
+      center: [(left + right) / 2, (bottom + top) / 2],
+      half: [(right - left) / 2, (top - bottom) / 2],
+      radius: toSceneLength(extractBorderRadius(element, rect)),
+      color: extractRGBColor(element),
+    });
   }
 
-  return objects;
+  // For now, always make the background white, for a better effect.
+  // TODO: Retain the hue
+  return { background: [...white], elements: raised };
 }
 
 /**
@@ -348,15 +323,14 @@ function styleCanvas(canvas, element, startDisplayed = false) {
  */
 function schedulePause() {
   clearTimeout(pauseTimer);
-  pauseTimer = setTimeout(() => ui.renderer.pause(), pauseAfter);
+  pauseTimer = setTimeout(() => renderer.pause(), pauseAfter);
 }
 
 /**
  * Rebuild and render the scene, for example after the page was resized.
  */
 function reset() {
-  ui.setObjects(makeScene(backgroundElement, raisedElements));
-  ui.renderer.resume();
+  renderer.setScene(makeScene(backgroundElement, raisedElements));
   styleCanvas(backgroundCanvas, backgroundElement, true);
   schedulePause();
 }
@@ -389,7 +363,7 @@ function enableMoveLightOnClick() {
 
     // stored normalized, so that the light stays under the cursor when the page is resized
     lightPosition = [x, y, lightElevation];
-    ui.setLightPosition(sceneLightPosition(backgroundCanvas));
+    renderer.setLightPosition(sceneLightPosition(backgroundCanvas));
     reset();
   });
 }
@@ -478,15 +452,23 @@ function initRTX({ background, raised, disableIfDarkMode = false, forceLightMode
   backgroundElement.appendChild(backgroundCanvas);
 
   const config = {
-    projection: 'orthographic',
-    orthoHeight: sceneExtent(backgroundCanvas).viewHeight,
-    zoom: cameraDistance,
+    extent: sceneExtent(backgroundCanvas),
+    height: zHeight,
     lightPosition: sceneLightPosition(backgroundCanvas),
     lightSize,
     lightVal,
   };
 
-  ui = makePathTracer(backgroundCanvas, makeScene(backgroundElement, raisedElements), config, false);
+  try {
+    renderer = makeRadianceCascades(backgroundCanvas, makeScene(backgroundElement, raisedElements), config);
+  } catch (error) {
+    console.error('Not applying RTX, the renderer failed to start.', error);
+  }
+
+  if (!renderer) {
+    backgroundCanvas.remove();
+    return false;
+  }
 
   schedulePause();
   backgroundCanvas.style.opacity = '1';
@@ -514,7 +496,7 @@ function on(options) {
     }
   } else {
     // unhide canvas
-    ui.renderer.resume();
+    renderer.resume();
     backgroundCanvas.style.opacity = '1';
   }
 
@@ -541,7 +523,7 @@ function off() {
     restoreStyle(element);
   }
 
-  ui.renderer.pause();
+  renderer.pause();
 }
 
 /**

@@ -82,8 +82,6 @@
   <script type="importmap">
     {
       "imports": {
-        "webgl-path-tracing": "https://webgl-path-tracing.steren.fr/webgl-path-tracing.js",
-        "sylvester": "https://webgl-path-tracing.steren.fr/sylvester.src.js",
         "rtx-on": "../rtx-on.js"
       }
     }
@@ -104,7 +102,7 @@
   <header>
     <h1><code>rtx-on.js</code></h1>
     <p>Drop the box shadow, your web pages deserve proper ray tracing.</p>
-    <p><code>rtx-on.js</code> is an experimental JavaScript library that enhances web pages by simulating in real time realistic lights and shadows using ray tracing.</p>
+    <p><code>rtx-on.js</code> is an experimental JavaScript library that enhances web pages by simulating realistic lights and shadows, using radiance cascades to solve the light arriving at every point of the page from every direction.</p>
   </header>
 
   <main>
@@ -131,8 +129,6 @@
 &lt;script type="importmap">
 {
   "imports": {
-    "webgl-path-tracing": "https://webgl-path-tracing.steren.fr/webgl-path-tracing.js",
-    "sylvester": "https://webgl-path-tracing.steren.fr/sylvester.src.js",
     "rtx-on": "https://rtx-on.steren.fr/rtx-on.js"
   }
 }
@@ -161,7 +157,7 @@ window.onload = function() {
 
     <section>
       <h2>Credits</h2>
-      <p>Made by <a href="https://steren.fr">Steren</a> using <a href="https://webgl-path-tracing.steren.fr/">webgl-path-tracing</a>, a WebGL path tracing library developed in 2010 by <a href="https://madebyevan.com/">Evan Wallace</a>.</p>     
+      <p>Made by <a href="https://steren.fr">Steren</a>. Lighting is solved with <a href="https://github.com/Raikiri/RadianceCascadesPaper">radiance cascades</a>, a technique by Alexander Sannikov, in a dependency free WebGL2 renderer that ships with the library.</p>
     </section>
 
     <div class="cube" style="background-color: aqua;"></div>
