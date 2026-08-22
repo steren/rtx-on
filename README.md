@@ -12,8 +12,6 @@ Simply add to your web page:
 <script type="importmap">
 {
   "imports": {
-    "webgl-path-tracing": "https://webgl-path-tracing.steren.fr/webgl-path-tracing.js",
-    "sylvester": "https://webgl-path-tracing.steren.fr/sylvester.src.js",
     "rtx-on": "https://rtx-on.steren.fr/rtx-on.js"
   }
 }
@@ -48,7 +46,7 @@ Removes any existing box shadow effect.
 
 Raised elements keep their `border-radius`: a rounded element is rendered as a rounded box, and casts a shadow with rounded corners. The rendered shape has a single radius shared by its four corners, so an element whose corners differ gets their average.
 
-The scene is rendered through an orthographic camera, so a raised element covers exactly the rectangle of the element it stands for, wherever that element sits on the page: being raised neither enlarges it nor turns its sides towards the viewer.
+The page is seen from straight above, so a raised element covers exactly the rectangle of the element it stands for, wherever that element sits on the page: being raised neither enlarges it nor turns its sides towards the viewer.
 
 #### `rtx.off()`
 
@@ -59,6 +57,22 @@ Restores any existing box shadow effect.
 
 Display an RTX ON/OFF button on the page. For fun.
 
-## Acknowledgements
+## How it works
 
-This module uses [webgl-path-tracing](https://webgl-path-tracing.steren.fr/), a WebGL path tracing library developed in 2010 by [Evan Wallace](https://madebyevan.com/) and later updated by the author of this module.
+The page is modelled as a heightfield: a flat background with the raised elements standing on
+it, under a single round light hanging above. Its lighting is solved with
+[radiance cascades](https://github.com/Raikiri/RadianceCascadesPaper), a technique by
+Alexander Sannikov, in a WebGL2 renderer that ships with this module and pulls in no
+dependencies.
+
+Radiance cascades solve for the light arriving at every point from every direction at once,
+in a hierarchy of probe grids. The bottom level has a probe every few pixels but only four
+directions, and each level up quadruples the number of directions while halving the probe
+grid on both axes, covering a stretch of ray four times longer. Near the surface, where light
+changes quickly from place to place but slowly from direction to direction, the dense bottom
+level does the work; far away, where the opposite holds, the sparse top levels do. Merging the
+hierarchy back down gives soft shadows that sharpen as they approach whatever casts them, and
+light bounced off the sides of raised elements onto the page around them.
+
+The scene does not move, so the renderer solves it in a handful of frames and then stops,
+until the page is resized or the light is moved.

@@ -4,7 +4,8 @@
   "description": "Use proper ray traced shadow instead of the boring box-shadow",
   "type": "module",
   "files": [
-    "rtx-on.js"
+    "rtx-on.js",
+    "radiance-cascades.js"
   ],
   "directories": {
     "example": "examples"
@@ -18,7 +19,10 @@
     "url": "git+https://github.com/steren/rtx-on.git"
   },
   "keywords": [
-    "raytracing"
+    "raytracing",
+    "radiance-cascades",
+    "global-illumination",
+    "webgl"
   ],
   "author": "Steren Giannini <steren.giannini@gmail.com>",
   "license": "Apache-2.0",
@@ -29,9 +33,6 @@
   "module": "./rtx-on.js",
   "exports": {
     ".": "./rtx-on.js"
-  },
-  "dependencies": {
-    "webgl-path-tracing": "^1.17.0"
   },
   "devDependencies": {
     "serve": "^14.2.6"
